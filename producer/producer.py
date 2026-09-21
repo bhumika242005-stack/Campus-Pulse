@@ -1,14 +1,15 @@
 import json
 import time
+import os
 
 from kafka import KafkaProducer
 
 from simulator import generate_event
 
 
-KAFKA_SERVER = "localhost:9092"
-TOPIC_NAME = "campus-events"
 
+KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
+TOPIC_NAME = os.getenv("KAFKA_TOPIC", "campus-events")
 
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_SERVER,
