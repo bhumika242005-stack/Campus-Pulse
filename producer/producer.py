@@ -11,13 +11,10 @@ from simulator import generate_event
 KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
 TOPIC_NAME = os.getenv("KAFKA_TOPIC", "campus-events")
 
-producer = KafkaProducer(
-    bootstrap_servers=KAFKA_SERVER,
-    value_serializer=lambda value: json.dumps(value).encode("utf-8")
-)
 
 
-def send_event(event):
+
+def send_event(producer, event):
     producer.send(
         TOPIC_NAME,
         value=event,
@@ -32,6 +29,10 @@ def send_event(event):
 
 
 def main():
+    producer = KafkaProducer(
+        bootstrap_servers=KAFKA_SERVER,
+        value_serializer=lambda value: json.dumps(value).encode("utf-8")
+    )
 
     print("Campus Pulse Producer Started")
 
@@ -39,7 +40,7 @@ def main():
         while True:
             event = generate_event()
 
-            send_event(event)
+            send_event(producer, event)
 
             time.sleep(2)
 
