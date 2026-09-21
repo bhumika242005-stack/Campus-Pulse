@@ -1,122 +1,196 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Users, BookOpen, Utensils, Bell } from "lucide-react";
 
+import Sidebar from "./components/Sidebar";
+import StatCard from "./components/StatCard";
+import OccupancyCard from "./components/OccupancyCard";
+
+import {
+  dashboardStats,
+  occupancyData,
+  recentEvents,
+  alerts,
+} from "./data/mockData";
+
+function Dashboard() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div className="page">
+      <div className="dashboard-header">
         <div>
-          <h1>Get started</h1>
+          <h1>Welcome back, Admin</h1>
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            Here's what's happening across campus today.
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="system-online">
+          <span></span>
+          System Online
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+      </div>
+
+      <div className="stats-grid">
+        <StatCard
+          icon={<Users size={21} />}
+          title="Total Students"
+          value={dashboardStats.totalStudents}
+          subtitle="+8.2% from yesterday"
+        />
+
+        <StatCard
+          icon={<BookOpen size={21} />}
+          title="Library Occupancy"
+          value={`${dashboardStats.libraryOccupancy}/${dashboardStats.libraryCapacity}`}
+          subtitle="79% capacity"
+        />
+
+        <StatCard
+          icon={<Utensils size={21} />}
+          title="Canteen Occupancy"
+          value={`${dashboardStats.canteenOccupancy}/${dashboardStats.canteenCapacity}`}
+          subtitle="61% capacity"
+        />
+
+        <StatCard
+          icon={<Bell size={21} />}
+          title="Active Alerts"
+          value={dashboardStats.activeAlerts}
+          subtitle="Requires attention"
+        />
+      </div>
+
+      <div className="dashboard-grid">
+        <section className="dashboard-card">
+          <div className="card-header">
+            <div>
+              <h2>Campus Occupancy</h2>
+              <p>Current occupancy across campus locations</p>
+            </div>
+          </div>
+
+          <div className="occupancy-list">
+            {occupancyData.map((item) => (
+              <OccupancyCard
+                key={item.location}
+                location={item.location}
+                current={item.current}
+                capacity={item.capacity}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-card">
+          <div className="card-header">
+            <div>
+              <h2>Active Alerts</h2>
+              <p>Events requiring attention</p>
+            </div>
+          </div>
+
+          <div className="alert-list">
+            {alerts.map((alert) => (
+              <div className="alert-item" key={alert.id}>
+                <div className="alert-dot"></div>
+
+                <div>
+                  <strong>{alert.type}</strong>
+                  <p>{alert.location}</p>
+                  <span>{alert.message}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <section className="dashboard-card">
+        <div className="card-header">
+          <div>
+            <h2>Recent Events</h2>
+            <p>Latest campus activity</p>
+          </div>
+        </div>
+
+        <div className="event-list">
+          {recentEvents.map((event) => (
+            <div className="event-item" key={event.id}>
+              <div className="event-indicator"></div>
+
+              <div className="event-info">
+                <strong>{event.type}</strong>
+                <span>{event.location}</span>
+              </div>
+
+              <time>{event.time}</time>
+            </div>
+          ))}
         </div>
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+function Analytics() {
+  return (
+    <div className="page">
+      <h1>Analytics</h1>
+      <p>Campus analytics will appear here.</p>
+    </div>
+  );
+}
+
+function Alerts() {
+  return (
+    <div className="page">
+      <h1>Alerts</h1>
+      <p>Campus alerts will appear here.</p>
+    </div>
+  );
+}
+
+function Events() {
+  return (
+    <div className="page">
+      <h1>Events</h1>
+      <p>Campus events will appear here.</p>
+    </div>
+  );
+}
+
+function AppLayout() {
+  return (
+    <>
+      <Sidebar />
+
+      <main className="main-content">
+        <Routes>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/events" element={<Events />} />
+          <Route
+            path="*"
+            element={<Navigate to="/dashboard" replace />}
+          />
+        </Routes>
+      </main>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppLayout />
+    </BrowserRouter>
+  );
+}
+
+export default App;
