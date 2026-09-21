@@ -6,6 +6,8 @@ import {
   CircleCheck,
 } from "lucide-react";
 
+import { NavLink } from "react-router-dom";
+
 function Sidebar() {
   return (
     <aside className="sidebar">
@@ -23,25 +25,45 @@ function Sidebar() {
       <div className="sidebar-section">
         <p className="sidebar-title">MAIN</p>
 
-        <a href="/dashboard" className="sidebar-link active">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <LayoutDashboard size={19} />
           <span>Dashboard</span>
-        </a>
+        </NavLink>
 
-        <a href="/analytics" className="sidebar-link">
+        <NavLink
+          to="/analytics"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <BarChart3 size={19} />
           <span>Analytics</span>
-        </a>
+        </NavLink>
 
-        <a href="/alerts" className="sidebar-link">
+        <NavLink
+          to="/alerts"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <Bell size={19} />
           <span>Alerts</span>
-        </a>
+        </NavLink>
 
-        <a href="/events" className="sidebar-link">
+        <NavLink
+          to="/events"
+          className={({ isActive }) =>
+            `sidebar-link ${isActive ? "active" : ""}`
+          }
+        >
           <Activity size={19} />
           <span>Events</span>
-        </a>
+        </NavLink>
       </div>
 
       <div className="sidebar-status">

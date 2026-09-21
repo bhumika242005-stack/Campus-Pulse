@@ -5,11 +5,18 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import { Users, BookOpen, Utensils, Bell } from "lucide-react";
-
+import {
+  Users,
+  BookOpen,
+  Utensils,
+  Bell,
+} from "lucide-react";
+import Alerts from "./pages/Alerts";
 import Sidebar from "./components/Sidebar";
 import StatCard from "./components/StatCard";
 import OccupancyCard from "./components/OccupancyCard";
+import Analytics from "./pages/Analytics";
+import Events from "./pages/Events";
 
 import {
   dashboardStats,
@@ -133,33 +140,6 @@ function Dashboard() {
           ))}
         </div>
       </section>
-    </div>
-  );
-}
-
-function Analytics() {
-  return (
-    <div className="page">
-      <h1>Analytics</h1>
-      <p>Campus analytics will appear here.</p>
-    </div>
-  );
-}
-
-function Alerts() {
-  return (
-    <div className="page">
-      <h1>Alerts</h1>
-      <p>Campus alerts will appear here.</p>
-    </div>
-  );
-}
-
-function Events() {
-  return (
-    <div className="page">
-      <h1>Events</h1>
-      <p>Campus events will appear here.</p>
     </div>
   );
 }
