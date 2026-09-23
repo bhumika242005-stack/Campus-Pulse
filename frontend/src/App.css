@@ -185,7 +185,7 @@ textarea {
   font-size: 13px;
   font-weight: 600;
 
-  cursor: default;
+  cursor: pointer;
 
   transition:
     background 0.2s ease,
@@ -837,6 +837,15 @@ textarea {
   color: #78392e;
 }
 
+.alert p {
+  margin: 5px 0 0;
+}
+
+.alert small {
+  display: block;
+  margin-top: 6px;
+}
+
 
 /* =========================================================
    LIVE EVENTS
@@ -915,6 +924,254 @@ textarea {
 
 
 /* =========================================================
+   SYSTEM STATUS
+========================================================= */
+
+.system-status-list {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+
+  margin-top: 20px;
+}
+
+.system-status-row {
+  display: grid;
+
+  grid-template-columns:
+    30px
+    160px
+    1fr;
+
+  align-items: center;
+
+  min-height: 68px;
+
+  padding: 0 20px;
+
+  border-bottom: 1px solid #edf1f7;
+
+  column-gap: 10px;
+}
+
+.system-status-row:last-child {
+  border-bottom: none;
+}
+
+.system-status-dot {
+  color: #4b83ff;
+
+  font-size: 12px;
+}
+
+.system-status-row strong {
+  color: #17233c;
+
+  font-size: 14px;
+}
+
+.system-status-row > span:last-child {
+  color: #71809d;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   EVENTS PAGE
+========================================================= */
+
+.events-page-panel {
+  padding: 28px;
+}
+
+.events-page-panel .panel-header {
+  margin-bottom: 20px;
+}
+
+.events-page-panel .panel-header > div p {
+  margin: 5px 0 0;
+
+  color: #8a96a8;
+
+  font-size: 11px;
+}
+
+.events-table {
+  width: 100%;
+
+  margin-top: 20px;
+
+  overflow-x: auto;
+}
+
+.events-table-header,
+.events-table-row {
+  display: grid;
+
+  grid-template-columns:
+    1.2fr
+    1fr
+    1fr
+    1.2fr;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 16px 18px;
+}
+
+.events-table-header {
+  background: #f4f7fb;
+
+  border-radius: 10px;
+
+  color: #6b7a99;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+}
+
+.events-table-row {
+  border-bottom: 1px solid #edf1f7;
+
+  color: #263653;
+
+  font-size: 14px;
+
+  min-height: 52px;
+}
+
+.events-table-row:hover {
+  background: #f8faff;
+}
+
+.events-table-row strong {
+  color: #14213d;
+}
+
+.event-type {
+  text-transform: uppercase;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  color: #4678f5;
+}
+
+.events-loading,
+.events-empty {
+  padding: 45px;
+
+  text-align: center;
+
+  color: #6b7a99;
+}
+
+.events-empty strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #263653;
+
+  font-size: 15px;
+}
+
+.events-empty p {
+  margin: 0;
+
+  color: #7d899d;
+
+  font-size: 12px;
+}
+
+.events-error {
+  padding: 30px;
+
+  text-align: center;
+
+  color: #c0392b;
+
+  background: #fff5f3;
+
+  border-radius: 10px;
+
+  margin-top: 20px;
+}
+
+
+/* =========================================================
+   ALERT PAGE
+========================================================= */
+
+.alerts-page-panel {
+  padding: 28px;
+}
+
+.alerts-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 15px;
+
+  margin-top: 20px;
+}
+
+.alert-icon {
+  display: inline-flex;
+
+  margin-right: 8px;
+}
+
+
+/* =========================================================
+   ANALYTICS
+========================================================= */
+
+.analytics-stat-list {
+  display: flex;
+
+  flex-direction: column;
+
+  margin-top: 20px;
+}
+
+.analytics-stat {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 18px 0;
+
+  border-bottom: 1px solid #edf1f7;
+}
+
+.analytics-stat:last-child {
+  border-bottom: none;
+}
+
+.analytics-stat span {
+  color: #71809d;
+}
+
+.analytics-stat strong {
+  font-size: 20px;
+
+  color: #17233c;
+}
+
+
+/* =========================================================
    RESPONSIVE
 ========================================================= */
 
@@ -926,6 +1183,7 @@ textarea {
 
   .main-area {
     width: calc(100% - 215px);
+
     margin-left: 215px;
   }
 
@@ -953,6 +1211,7 @@ textarea {
 
   .main-area {
     width: 100%;
+
     margin-left: 0;
   }
 
@@ -1006,7 +1265,8 @@ textarea {
 
   .summary-grid,
   .zone-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
   .page-heading {
@@ -1020,6 +1280,18 @@ textarea {
   .header-date {
     display: none;
   }
+
+  .events-table-header,
+  .events-table-row {
+    min-width: 650px;
+  }
+
+  .system-status-row {
+    grid-template-columns:
+      25px
+      120px
+      1fr;
+  }
 }
 
 
@@ -1028,8 +1300,7 @@ textarea {
   .header {
     height: 68px;
 
-    padding:
-      0 16px;
+    padding: 0 16px;
   }
 
   .dashboard {
@@ -1062,5 +1333,25 @@ textarea {
 
   .event-count {
     font-size: 8px;
+  }
+
+  .system-status-row {
+    grid-template-columns:
+      20px
+      100px
+      1fr;
+
+    padding: 0 12px;
+
+    font-size: 12px;
+  }
+
+  .events-page-panel {
+    padding: 18px;
+  }
+
+  .events-table-header,
+  .events-table-row {
+    min-width: 650px;
   }
 }
