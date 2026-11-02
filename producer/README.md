@@ -1,22 +1,32 @@
-# Campus Pulse - Event Producer
+# Campus Pulse – Event Producer
 
-This module simulates campus activity and sends events to Apache Kafka.
+This module is responsible for generating campus activity events, receiving event requests through FastAPI, and publishing events to an Apache Kafka topic.
 
 ## Files
 
-* `simulator.py` - Generates realistic simulated campus events.
-* `producer.py` - Sends events to the Kafka topic.
-* `requirements.txt` - Python dependency list.
+- `simulator.py` – Generates realistic simulated campus events.
+- `producer.py` – Sends simulated events to Kafka.
+- `api.py` – Receives events through a REST API and publishes them to Kafka.
+- `requirements.txt` – Python dependency list.
+
+## Technologies Used
+
+- Python
+- Apache Kafka
+- Docker
+- FastAPI
+- Uvicorn
+- Kafka-Python
 
 ## Event Format
 
-Each event contains:
+Each event contains five fields:
 
-* `event_id` - Unique UUID for the event.
-* `student_id` - Simulated student ID.
-* `zone` - Library, Canteen, or Lab.
-* `event_type` - Currently `check_in`.
-* `timestamp` - UTC timestamp in ISO format.
+- `event_id` – Unique UUID for the event.
+- `student_id` – Student identifier.
+- `zone` – Library, Canteen, or Lab.
+- `event_type` – check_in or check_out.
+- `timestamp` – UTC timestamp in ISO format.
 
 Example:
 
@@ -34,34 +44,25 @@ Example:
 
 The simulator uses different zone probabilities based on the time of day:
 
-* Morning: higher Library and Lab activity.
-* Lunch: higher Canteen activity.
-* Afternoon: higher Library and Lab activity.
-* Evening/night: higher Library activity.
+- Morning: Higher Library and Lab activity.
+- Lunch: Higher Canteen activity.
+- Afternoon: Higher Library and Lab activity.
+- Evening/night: Higher Library activity.
 
-This makes the generated events more realistic than completely uniform random events.
+This makes generated events more realistic than completely uniform random events.
 
 ## Kafka Configuration
 
-Kafka broker:
+- Kafka broker: `localhost:9092`
+- Kafka topic: `campus-events`
 
-`localhost:9092`
-
-Kafka topic:
-
-`campus-events`
-
-The topic uses 3 partitions.
-
-## Message Keys
-
-The event's `zone` is used as the Kafka message key.
+The producer uses the event's zone as the Kafka message key.
 
 ```python
 key=event["zone"].encode("utf-8")
 ```
 
-The Kafka partitioner uses this key when deciding which partition receives the message.
+The API also uses the zone as its message key.
 
 ## Serialization
 
@@ -71,53 +72,81 @@ Events are converted from Python dictionaries to JSON and encoded as UTF-8 befor
 value_serializer=lambda value: json.dumps(value).encode("utf-8")
 ```
 
-## Producer Acknowledgement
+## FastAPI Integration
 
-The producer waits for Kafka to confirm the send operation using:
+The FastAPI application provides a REST endpoint for receiving campus activity events.
 
-```python
-future.get(timeout=10)
+**Endpoint:**
+
+`POST /events`
+
+**Request body:**
+
+```json
+{
+  "student_id": "S0001",
+  "zone": "Library",
+  "event_type": "check_in"
+}
 ```
 
-The producer prints the partition and offset returned by Kafka after a successful send.
+The API generates the event ID and UTC timestamp before publishing the complete event to Kafka.
 
-## Error Handling
+Interactive API documentation is available at:
 
-Before starting the producer, the program checks whether Kafka is reachable at the configured broker.
+`http://127.0.0.1:8000/docs`
 
-If Kafka is unavailable, the producer prints:
+## Input Validation
 
-`Kafka is not available at localhost:9092`
+The API validates incoming event data.
 
-and exits safely.
+- Allowed zones: Library, Canteen, Lab.
+- Allowed event types: check_in, check_out.
+- Invalid zones return HTTP 400.
+- Invalid event types return HTTP 400.
+- Missing or incorrectly formatted required fields are rejected by Pydantic validation.
 
-The producer also catches errors that occur while sending events.
+## Kafka Producer Acknowledgement
 
-## Duplicate Handling
+The API waits for Kafka to confirm the send operation using:
 
-The producer maintains an in-memory set of generated event IDs during the current run.
+```python
+producer.send(
+    TOPIC_NAME,
+    key=event["zone"].encode("utf-8"),
+    value=event_data
+).get(timeout=15)
+```
 
-If the same event ID is encountered again, the event is ignored.
+A successful response confirms that Kafka acknowledged the message.
 
-UUIDs are used for event IDs to make accidental ID collisions very unlikely.
+## Error Handling and Recovery
 
-This duplicate check is only for the current producer process and is not persistent across restarts.
+The FastAPI producer includes connection and error-handling mechanisms.
 
-## Throughput Test
+- Attempts to establish a Kafka connection up to five times during startup.
+- Waits three seconds between connection attempts.
+- Uses Kafka producer retries for message delivery.
+- Returns HTTP 503 when Kafka is unavailable.
+- Attempts to reconnect when a new event arrives and the producer is unavailable.
+- Closes the producer safely during application shutdown.
 
-A local test was performed by sending 100 events to Kafka.
+## Testing Performed
 
-Result:
+The following tests were performed:
 
-* Events sent: 100
-* Time: approximately 0.16 seconds
-* Throughput: approximately 645 events/second
+1. Successfully sent multiple campus activity events through FastAPI.
+2. Verified events for different student IDs and campus zones.
+3. Tested invalid campus zones.
+4. Tested invalid event types.
+5. Verified published messages using the Kafka console consumer.
+6. Stopped Kafka and tested API behavior during broker unavailability.
+7. Verified connection retry attempts.
+8. Restarted Kafka and successfully sent a new event after recovery.
 
-This is a local benchmark and may differ from performance in a production environment.
+## Running the Application
 
-## Testing
-
-### Start Kafka
+### 1. Start Docker and Kafka
 
 From the project root:
 
@@ -125,42 +154,68 @@ From the project root:
 docker compose up -d
 ```
 
-### Create the Kafka topic
-
-```bash
-docker exec campus-kafka /opt/kafka/bin/kafka-topics.sh --create --topic campus-events --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
-```
-
-### Run the producer
+### 2. Activate the Python virtual environment
 
 From the `producer` directory:
 
 ```bash
-python producer.py
+.venv\Scripts\activate.bat
 ```
 
-### View Kafka events
+### 3. Install dependencies
 
-In another terminal:
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Start FastAPI
+
+```bash
+python -m uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 5. Open API documentation
+
+Visit:
+
+`http://127.0.0.1:8000/docs`
+
+Use the `POST /events` endpoint to send campus activity events.
+
+### 6. View Kafka events
+
+Open another terminal and run:
 
 ```bash
 docker exec -it campus-kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic campus-events --from-beginning
 ```
 
-The consumer should display JSON events generated by the producer.
+The consumer displays the JSON messages stored in the Kafka topic.
 
 ## Producer Flow
 
 ```text
-Python Simulator
-       ↓
-JSON Event
-       ↓
-Kafka Producer
-       ↓
-campus-events topic
-       ↓
-Kafka partitions
-       ↓
-Backend Consumer
+Campus Activity Simulator / API Request
+                  |
+                  v
+          Python Event Data
+                  |
+                  v
+          JSON Serialization
+                  |
+                  v
+           Kafka Producer
+                  |
+                  v
+          campus-events Topic
+                  |
+                  v
+           Kafka Partitions
+                  |
+                  v
+          Backend Consumer
 ```
+
+## Member 2 Responsibility
+
+Member 2 is responsible for Python-based campus event generation, Kafka producer implementation, FastAPI event integration, event validation, message publishing, and producer-side error handling and testing.
