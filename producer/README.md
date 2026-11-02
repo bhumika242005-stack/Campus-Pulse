@@ -7,6 +7,7 @@ This module is responsible for generating campus activity events, receiving even
 - `simulator.py` – Generates realistic simulated campus events.
 - `producer.py` – Sends simulated events to Kafka.
 - `api.py` – Receives events through a REST API and publishes them to Kafka.
+- `test_api.py` – Performs automated testing of the FastAPI event endpoint.
 - `requirements.txt` – Python dependency list.
 
 ## Technologies Used
@@ -76,9 +77,7 @@ value_serializer=lambda value: json.dumps(value).encode("utf-8")
 
 The FastAPI application provides a REST endpoint for receiving campus activity events.
 
-**Endpoint:**
-
-`POST /events`
+**Endpoint:** `POST /events`
 
 **Request body:**
 
@@ -113,7 +112,7 @@ The API waits for Kafka to confirm the send operation using:
 ```python
 producer.send(
     TOPIC_NAME,
-    key=event["zone"].encode("utf-8"),
+    key=event.zone.encode("utf-8"),
     value=event_data
 ).get(timeout=15)
 ```
@@ -144,6 +143,27 @@ The following tests were performed:
 7. Verified connection retry attempts.
 8. Restarted Kafka and successfully sent a new event after recovery.
 
+### Automated API Testing
+
+An automated test script (`test_api.py`) was created to verify the FastAPI event endpoint.
+
+**Test procedure:**
+
+- Sent 10 consecutive POST requests to `/events`.
+- Used different student IDs, campus zones, and event types.
+- Checked the HTTP response for each request.
+
+**Test results:**
+
+| Parameter | Result |
+|---|---|
+| Total requests | 10 |
+| Successful requests | 10 |
+| Failed requests | 0 |
+| HTTP response | 200 OK |
+
+**Conclusion:** All 10 requests were successfully accepted by the FastAPI endpoint. Kafka message delivery can be verified separately using the Kafka console consumer.
+
 ## Running the Application
 
 ### 1. Start Docker and Kafka
@@ -158,7 +178,7 @@ docker compose up -d
 
 From the `producer` directory:
 
-```bash
+```cmd
 .venv\Scripts\activate.bat
 ```
 
@@ -196,23 +216,23 @@ The consumer displays the JSON messages stored in the Kafka topic.
 
 ```text
 Campus Activity Simulator / API Request
-                  |
-                  v
+                 |
+                 v
           Python Event Data
-                  |
-                  v
+                 |
+                 v
           JSON Serialization
-                  |
-                  v
+                 |
+                 v
            Kafka Producer
-                  |
-                  v
+                 |
+                 v
           campus-events Topic
-                  |
-                  v
+                 |
+                 v
            Kafka Partitions
-                  |
-                  v
+                 |
+                 v
           Backend Consumer
 ```
 
