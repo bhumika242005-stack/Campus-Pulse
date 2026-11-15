@@ -24,7 +24,8 @@ type CampusEvent = {
 };
 
 // Replace with your actual assigned student ID when confirmed
-const STUDENT_ID = 'S0001';
+const STUDENT_ID = 'S0003'; // Replace with your assigned student ID
+const API_URL = 'http://172.18.149.145:8000';
 
 const zones = ['Library', 'Canteen', 'Computer Lab'];
 
@@ -35,7 +36,7 @@ export default function HomeScreen() {
     useState<Location.LocationObject | null>(null);
 
   const [loading, setLoading] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState('Not Checked In');
 
   const [lastAction, setLastAction] = useState('');
@@ -118,62 +119,128 @@ export default function HomeScreen() {
   };
 
   // Check-in
-  const handleCheckIn = () => {
-    if (!location) {
-      Alert.alert(
-        'GPS Required',
-        'Please detect your location first.'
-      );
-      return;
-    }
-
-    if (status === 'Checked In') {
-      Alert.alert(
-        'Notice',
-        'You are already checked in.'
-      );
-      return;
-    }
-
-    const event = generateEvent(
-      'check_in',
-      selectedZone
+  
+const handleCheckIn = async () => {
+  if (!location) {
+    Alert.alert(
+      'GPS Required',
+      'Please detect your location first.'
     );
+    return;
+  }
 
+  if (status === 'Checked In') {
+    Alert.alert(
+      'Notice',
+      'You are already checked in.'
+    );
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+
+    const response = await fetch(`${API_URL}/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        student_id: STUDENT_ID,
+        zone: getBackendZone(selectedZone),
+        event_type: 'check_in',
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.detail || 'Unable to check in.'
+      );
+    }
+
+    const event: CampusEvent = data.event;
+
+    setLastEvent(event);
     setActiveZone(selectedZone);
     setStatus('Checked In');
     setLastAction(new Date().toLocaleString());
 
     Alert.alert(
       'Check-in Successful',
-      `Event generated for ${event.zone}!`
+      `Your check-in for ${event.zone} was sent to the server!`
     );
-  };
+
+  } catch (error) {
+    Alert.alert(
+      'Check-in Failed',
+      error instanceof Error
+        ? error.message
+        : 'Unable to connect to Campus Pulse API.'
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   // Check-out
-  const handleCheckOut = () => {
-    if (status !== 'Checked In' || !activeZone) {
-      Alert.alert(
-        'Notice',
-        'You are not currently checked in.'
+  
+const handleCheckOut = async () => {
+  if (status !== 'Checked In' || !activeZone) {
+    Alert.alert(
+      'Notice',
+      'You are not currently checked in.'
+    );
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+
+    const response = await fetch(`${API_URL}/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        student_id: STUDENT_ID,
+        zone: getBackendZone(activeZone),
+        event_type: 'check_out',
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.detail || 'Unable to check out.'
       );
-      return;
     }
 
-    const event = generateEvent(
-      'check_out',
-      activeZone
-    );
+    const event: CampusEvent = data.event;
 
+    setLastEvent(event);
     setStatus('Checked Out');
     setActiveZone(null);
     setLastAction(new Date().toLocaleString());
 
     Alert.alert(
       'Check-out Successful',
-      `Event generated for ${event.zone}!`
+      `Your check-out from ${event.zone} was sent to the server!`
     );
-  };
+
+  } catch (error) {
+    Alert.alert(
+      'Check-out Failed',
+      error instanceof Error
+        ? error.message
+        : 'Unable to connect to Campus Pulse API.'
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -320,40 +387,74 @@ export default function HomeScreen() {
         </View>
 
         {/* Latest Generated Event */}
+        {/* Last Activity */}
         {lastEvent && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              Latest Generated Event
+              Last Activity
             </Text>
 
-            <Text style={styles.eventJson}>
-              {JSON.stringify(lastEvent, null, 2)}
-            </Text>
+            <Text style={{
+              color: '#198754',
+              fontSize: 16,
+              fontWeight: 'bold',
+              marginBottom: 12,
+            }}>
+              ✓ {lastEvent.event_type === 'check_in'
+                ? 'Check-in Successful'
+                : 'Check-out Successful'}
+              </Text>
 
-            <Text style={styles.eventNote}>
-              Generated locally. Not yet sent to FastAPI.
-            </Text>
-          </View>
+              <Text style={styles.locationText}>
+                Campus Zone: {lastEvent.zone}
+              </Text>
+
+              <Text style={styles.locationText}>
+                Student ID: {lastEvent.student_id}
+              </Text>
+
+              <Text style={styles.locationText}>
+                Time: {new Date(lastEvent.timestamp).toLocaleString()}
+              </Text>
+
+              <Text style={{
+                color: '#198754',
+                fontSize: 12,
+                marginTop: 12,
+              }}>
+              Your attendance has been recorded successfully.
+              </Text>
+            </View>
         )}
 
         {/* Check-in */}
         <TouchableOpacity
           style={styles.checkInButton}
           onPress={handleCheckIn}
+          disabled={submitting}
         >
-          <Text style={styles.buttonText}>
-            CHECK IN
-          </Text>
+          {submitting ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.buttonText}>
+              CHECK IN
+            </Text>
+          )}
         </TouchableOpacity>
 
         {/* Check-out */}
         <TouchableOpacity
           style={styles.checkOutButton}
           onPress={handleCheckOut}
+          disabled={submitting}
         >
+        {submitting ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
           <Text style={styles.buttonText}>
             CHECK OUT
           </Text>
+        )}
         </TouchableOpacity>
 
         {/* Footer */}

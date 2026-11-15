@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,34 +8,151 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const zones = [
-  { name: 'Library', occupancy: 75, color: '#2878C8', status: 'Busy' },
-  { name: 'Canteen', occupancy: 55, color: '#198754', status: 'Moderate' },
-  { name: 'Computer Lab', occupancy: 40, color: '#E5A13B', status: 'Normal' },
+const API_URL = 'http://172.18.149.145:8080';
+
+type ZoneInfo = {
+  zone: string;
+  occupancy: number;
+  alert: string | null;
+  updated_at: string;
+};
+
+type ZoneResponse = {
+  zone?: string;
+  occupancy?: number | string;
+  alert?: string | null;
+  updated_at?: string;
+};
+
+const initialZones: ZoneInfo[] = [
+  {
+    zone: 'Library',
+    occupancy: 0,
+    alert: null,
+    updated_at: '',
+  },
+  {
+    zone: 'Canteen',
+    occupancy: 0,
+    alert: null,
+    updated_at: '',
+  },
+  {
+    zone: 'Lab',
+    occupancy: 0,
+    alert: null,
+    updated_at: '',
+  },
 ];
 
-const activities = [
+const demoActivities = [
   {
     name: 'Student checked in',
     zone: 'Library',
-    time: 'Recent activity',
+    time: 'Demo activity',
     icon: '🟢',
   },
   {
     name: 'Student checked out',
     zone: 'Canteen',
-    time: 'Recent activity',
+    time: 'Demo activity',
     icon: '🔵',
   },
   {
     name: 'High occupancy warning',
     zone: 'Library',
-    time: 'Campus alert',
+    time: 'Demo activity',
     icon: '⚠️',
   },
 ];
 
 export default function DashboardScreen() {
+  const [zones, setZones] = useState<ZoneInfo[]>(initialZones);
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch live occupancy data from Member 4's backend
+  useEffect(() => {
+    let active = true;
+
+    const fetchOccupancy = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/zones`);
+
+        if (!response.ok) {
+          throw new Error('Unable to fetch occupancy data.');
+        }
+
+        const result = await response.json();
+
+        const parsedZones: ZoneInfo[] = Object.entries(
+          result as Record<string, string | ZoneResponse>
+        ).map(([name, value]) => {
+          const zoneData: ZoneResponse =
+            typeof value === 'string'
+              ? JSON.parse(value)
+              : value;
+
+          return {
+            zone: name,
+            occupancy: Math.max(
+              0,
+              Number(zoneData.occupancy) || 0
+            ),
+            alert: zoneData.alert ?? null,
+            updated_at: zoneData.updated_at ?? '',
+          };
+        });
+
+        if (active) {
+          setZones(parsedZones);
+          setConnected(true);
+          setError('');
+          setLoading(false);
+        }
+      } catch (err) {
+        if (active) {
+          setConnected(false);
+          setError('Unable to connect to the live server.');
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchOccupancy();
+
+    const interval = setInterval(fetchOccupancy, 5000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Calculate total occupancy across all zones
+  const totalOccupancy = zones.reduce(
+    (total, zone) => total + zone.occupancy,
+    0
+  );
+
+  const getZoneName = (zone: string) => {
+    return zone === 'Lab' ? 'Computer Lab' : zone;
+  };
+
+  const getZoneColor = (zone: string) => {
+    switch (zone) {
+      case 'Library':
+        return '#2878C8';
+      case 'Canteen':
+        return '#198754';
+      case 'Lab':
+        return '#E5A13B';
+      default:
+        return '#2878C8';
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -44,6 +161,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.logo}>CAMPUS PULSE</Text>
+
             <Text style={styles.subtitle}>
               SMART CAMPUS OCCUPANCY
             </Text>
@@ -56,7 +174,10 @@ export default function DashboardScreen() {
 
         {/* Welcome */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcome}>Campus Dashboard</Text>
+          <Text style={styles.welcome}>
+            Campus Dashboard
+          </Text>
+
           <Text style={styles.description}>
             Monitor campus activity and occupancy at a glance.
           </Text>
@@ -68,105 +189,173 @@ export default function DashboardScreen() {
             CURRENT CAMPUS OCCUPANCY
           </Text>
 
-          <Text style={styles.mainNumber}>--</Text>
+          <Text style={styles.mainNumber}>
+            {loading ? '...' : totalOccupancy}
+          </Text>
 
           <Text style={styles.mainDescription}>
-            Live student count will appear here
+            Students currently present across monitored zones
           </Text>
 
           <View style={styles.liveStatus}>
-            <View style={styles.liveDot} />
+            <View
+              style={[
+                styles.liveDot,
+                {
+                  backgroundColor: connected
+                    ? '#22C55E'
+                    : '#E5A13B',
+                },
+              ]}
+            />
+
             <Text style={styles.liveText}>
-              Awaiting live backend data
+              {connected
+                ? 'Live backend connected'
+                : loading
+                  ? 'Loading occupancy data...'
+                  : 'Backend disconnected'}
             </Text>
           </View>
+
+          {error !== '' && (
+            <Text style={styles.connectionError}>
+              {error}
+            </Text>
+          )}
         </View>
 
         {/* Quick Statistics */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📍</Text>
+
             <Text style={styles.statNumber}>3</Text>
-            <Text style={styles.statLabel}>Monitored Zones</Text>
+
+            <Text style={styles.statLabel}>
+              Monitored Zones
+            </Text>
           </View>
 
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>⚠️</Text>
+
             <Text style={styles.statNumber}>--</Text>
-            <Text style={styles.statLabel}>Active Alerts</Text>
+
+            <Text style={styles.statLabel}>
+              Active Alerts
+            </Text>
           </View>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📥</Text>
+
             <Text style={styles.statNumber}>--</Text>
-            <Text style={styles.statLabel}>Check-ins Today</Text>
+
+            <Text style={styles.statLabel}>
+              Check-ins Today
+            </Text>
           </View>
 
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📤</Text>
+
             <Text style={styles.statNumber}>--</Text>
-            <Text style={styles.statLabel}>Check-outs Today</Text>
+
+            <Text style={styles.statLabel}>
+              Check-outs Today
+            </Text>
           </View>
         </View>
 
-        {/* Zone Occupancy */}
+        {/* Live Zone Occupancy */}
         <View style={styles.card}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
               Zone-wise Occupancy
             </Text>
-            <Text style={styles.viewText}>3 Zones</Text>
+
+            <Text style={styles.viewText}>
+              3 Zones
+            </Text>
           </View>
 
           <Text style={styles.cardDescription}>
-            Illustrative occupancy levels
+            Live student count by campus zone
           </Text>
 
-          {zones.map((zone) => (
-            <View key={zone.name} style={styles.zoneContainer}>
-              <View style={styles.zoneHeader}>
-                <Text style={styles.zoneName}>{zone.name}</Text>
-                <Text style={styles.zonePercentage}>
-                  {zone.occupancy}%
+          {zones.map((zone) => {
+            const share =
+              totalOccupancy > 0
+                ? (zone.occupancy / totalOccupancy) * 100
+                : 0;
+
+            const progressWidth =
+              `${share}%` as `${number}%`;
+
+            return (
+              <View
+                key={zone.zone}
+                style={styles.zoneContainer}
+              >
+                <View style={styles.zoneHeader}>
+                  <Text style={styles.zoneName}>
+                    {getZoneName(zone.zone)}
+                  </Text>
+
+                  <Text style={styles.zonePercentage}>
+                    {zone.occupancy} students
+                  </Text>
+                </View>
+
+                <View style={styles.progressBackground}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: progressWidth,
+                        backgroundColor: getZoneColor(zone.zone),
+                      },
+                    ]}
+                  />
+                </View>
+
+                <Text style={styles.zoneStatus}>
+                  {share.toFixed(0)}% of current campus occupancy
                 </Text>
               </View>
+            );
+          })}
 
-              <View style={styles.progressBackground}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${zone.occupancy}%`,
-                      backgroundColor: zone.color,
-                    },
-                  ]}
-                />
-              </View>
-
-              <Text style={styles.zoneStatus}>
-                {zone.status} occupancy (sample)
-              </Text>
-            </View>
-          ))}
+          {!connected && !loading && (
+            <Text style={styles.dataWarning}>
+              Showing the last available occupancy data.
+            </Text>
+          )}
         </View>
 
-        {/* Alerts Preview */}
+        {/* Demo Alerts */}
         <View style={styles.card}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
               Campus Alerts
             </Text>
-            <Text style={styles.alertCount}>Sample</Text>
+
+            <Text style={styles.alertCount}>
+              Demo
+            </Text>
           </View>
 
           <View style={styles.alertBox}>
             <Text style={styles.alertIcon}>⚠️</Text>
+
             <View style={styles.alertInfo}>
               <Text style={styles.alertTitle}>
                 High Occupancy Warning
               </Text>
+
               <Text style={styles.alertDescription}>
                 Library is approaching its maximum capacity.
               </Text>
@@ -175,24 +364,36 @@ export default function DashboardScreen() {
 
           <View style={styles.alertBox}>
             <Text style={styles.alertIcon}>👥</Text>
+
             <View style={styles.alertInfo}>
               <Text style={styles.alertTitle}>
                 Crowd Activity
               </Text>
+
               <Text style={styles.alertDescription}>
                 Higher than usual activity in the Canteen.
               </Text>
             </View>
           </View>
+
+          <Text style={styles.demoNote}>
+            These are sample notifications, not live alerts.
+          </Text>
         </View>
 
-        {/* Recent Activity */}
+        {/* Demo Recent Activity */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>
-            Recent Campus Activity
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              Recent Campus Activity
+            </Text>
 
-          {activities.map((activity, index) => (
+            <Text style={styles.alertCount}>
+              Demo
+            </Text>
+          </View>
+
+          {demoActivities.map((activity, index) => (
             <View key={index} style={styles.activityRow}>
               <Text style={styles.activityIcon}>
                 {activity.icon}
@@ -202,6 +403,7 @@ export default function DashboardScreen() {
                 <Text style={styles.activityTitle}>
                   {activity.name}
                 </Text>
+
                 <Text style={styles.activityZone}>
                   {activity.zone}
                 </Text>
@@ -212,6 +414,10 @@ export default function DashboardScreen() {
               </Text>
             </View>
           ))}
+
+          <Text style={styles.demoNote}>
+            Recent activity will be connected to live events later.
+          </Text>
         </View>
 
         {/* Footer */}
@@ -220,8 +426,8 @@ export default function DashboardScreen() {
         </Text>
 
         <Text style={styles.note}>
-          Sample occupancy and activity information is displayed
-          for interface testing. Live data requires backend integration.
+          Occupancy data is refreshed automatically from the
+          Campus Pulse backend.
         </Text>
 
       </ScrollView>
@@ -229,6 +435,7 @@ export default function DashboardScreen() {
   );
 }
 
+// Styling
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -329,13 +536,18 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 5,
-    backgroundColor: '#E5A13B',
     marginRight: 8,
   },
 
   liveText: {
     color: '#FDE7B0',
     fontSize: 11,
+  },
+
+  connectionError: {
+    color: '#FCA5A5',
+    fontSize: 11,
+    marginTop: 8,
   },
 
   statsRow: {
@@ -444,6 +656,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
+  dataWarning: {
+    color: '#D97706',
+    fontSize: 11,
+    marginTop: 5,
+  },
+
   alertCount: {
     color: '#D97706',
     fontSize: 11,
@@ -479,6 +697,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 5,
     lineHeight: 17,
+  },
+
+  demoNote: {
+    color: '#D97706',
+    fontSize: 10,
+    marginTop: 10,
   },
 
   activityRow: {
