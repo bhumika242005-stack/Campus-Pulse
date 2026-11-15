@@ -28,32 +28,83 @@ def create_table():
         )
     """)
 
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    print("PostgreSQL table ready!")
-
-
-def save_event(event):
-    connection = get_connection()
-    cursor = connection.cursor()
-
     cursor.execute("""
-        INSERT INTO events
-        (event_id, student_id, zone, event_type, timestamp)
-        VALUES (%s, %s, %s, %s, %s)
-        ON CONFLICT (event_id) DO NOTHING
-    """, (
-        event["event_id"],
-        event["student_id"],
-        event["zone"],
-        event["event_type"],
-        event["timestamp"]
-    ))
+        CREATE TABLE IF NOT EXISTS student_presence (
+            student_id VARCHAR(20) PRIMARY KEY,
+            zone VARCHAR(50) NOT NULL,
+            check_in_time TIMESTAMP NOT NULL
+        )
+    """)
 
     connection.commit()
     cursor.close()
     connection.close()
 
-    print(f"Event saved to PostgreSQL: {event['event_id']}")
+    print("PostgreSQL tables ready!")
+
+
+def process_event(event):
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            INSERT INTO events
+            (event_id, student_id, zone, event_type, timestamp)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (event_id) DO NOTHING
+            RETURNING event_id
+        """, (
+            event["event_id"],
+            event["student_id"],
+            event["zone"],
+            event["event_type"],
+            event["timestamp"]
+        ))
+
+        inserted = cursor.fetchone()
+
+        if inserted:
+            if event["event_type"] == "check_in":
+                cursor.execute("""
+                    INSERT INTO student_presence
+                    (student_id, zone, check_in_time)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (student_id)
+                    DO UPDATE SET
+                        zone = EXCLUDED.zone,
+                        check_in_time = EXCLUDED.check_in_time
+                """, (
+                    event["student_id"],
+                    event["zone"],
+                    event["timestamp"]
+                ))
+
+            elif event["event_type"] == "check_out":
+                cursor.execute("""
+                    DELETE FROM student_presence
+                    WHERE student_id = %s AND zone = %s
+                """, (
+                    event["student_id"],
+                    event["zone"]
+                ))
+
+        cursor.execute("""
+            SELECT zone, COUNT(*)
+            FROM student_presence
+            GROUP BY zone
+        """)
+
+        counts = dict(cursor.fetchall())
+
+        connection.commit()
+
+        return bool(inserted), counts
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
