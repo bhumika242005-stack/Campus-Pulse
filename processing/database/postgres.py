@@ -13,34 +13,53 @@ def get_connection():
     return psycopg2.connect(**DB_CONFIG)
 
 
+def test_connection():
+    try:
+        connection = get_connection()
+        connection.close()
+        print("PostgreSQL connection successful!")
+        return True
+    except Exception as e:
+        print(f"PostgreSQL connection failed: {e}")
+        return False
+
+
 def create_table():
     connection = get_connection()
-    cursor = connection.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS events (
-            id SERIAL PRIMARY KEY,
-            event_id VARCHAR(100) UNIQUE NOT NULL,
-            student_id VARCHAR(20) NOT NULL,
-            zone VARCHAR(50) NOT NULL,
-            event_type VARCHAR(50) NOT NULL,
-            timestamp TIMESTAMP NOT NULL
-        )
-    """)
+    try:
+        cursor = connection.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS student_presence (
-            student_id VARCHAR(20) PRIMARY KEY,
-            zone VARCHAR(50) NOT NULL,
-            check_in_time TIMESTAMP NOT NULL
-        )
-    """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS events (
+                id SERIAL PRIMARY KEY,
+                event_id VARCHAR(100) UNIQUE NOT NULL,
+                student_id VARCHAR(20) NOT NULL,
+                zone VARCHAR(50) NOT NULL,
+                event_type VARCHAR(50) NOT NULL,
+                timestamp TIMESTAMP NOT NULL
+            )
+        """)
 
-    connection.commit()
-    cursor.close()
-    connection.close()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS student_presence (
+                student_id VARCHAR(20) PRIMARY KEY,
+                zone VARCHAR(50) NOT NULL,
+                check_in_time TIMESTAMP NOT NULL
+            )
+        """)
 
-    print("PostgreSQL tables ready!")
+        connection.commit()
+        cursor.close()
+
+        print("PostgreSQL tables ready!")
+
+    except Exception:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
 
 
 def process_event(event):
