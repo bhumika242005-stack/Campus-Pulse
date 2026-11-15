@@ -1,22 +1,18 @@
 from datetime import datetime
 
-# Configurable demo threshold
+# Alert when actual occupancy reaches this number
 ALERT_THRESHOLD = 100
 
 
-def check_zone_activity(zone, count):
-    """
-    Generate an alert when activity in a zone
-    reaches the configured threshold.
-    """
+def check_zone_activity(zone, occupancy):
 
-    if count >= ALERT_THRESHOLD:
+    if occupancy >= ALERT_THRESHOLD:
         return {
-            "alert_type": "HIGH_ACTIVITY",
+            "alert_type": "HIGH_OCCUPANCY",
             "zone": zone,
-            "count": count,
+            "count": occupancy,
             "severity": "HIGH",
-            "message": f"High activity detected in {zone}: {count} events",
+            "message": f"High occupancy detected in {zone}: {occupancy} students",
             "timestamp": datetime.now().isoformat()
         }
 
