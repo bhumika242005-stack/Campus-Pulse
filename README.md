@@ -38,39 +38,21 @@
 
 ## Table of Contents
 
-
-
-\- \[1. Project Overview](#1-project-overview)
-
-\- \[2. Project Objectives](#2-project-objectives)
-
-\- \[3. Key Features](#3-key-features)
-
-\- \[4. Technology Stack](#4-technology-stack)
-
-\- \[5. System Architecture](#5-system-architecture)
-
-\- \[6. Project Structure](#6-project-structure)
-
-\- \[7. Team Responsibilities](#7-team-responsibilities)
-
-\- \[8. Prerequisites](#8-prerequisites)
-
-\- \[9. Environment Configuration](#9-environment-configuration)
-
-\- \[10. Local Setup and Execution](#10-local-setup-and-execution)
-
-\- \[11. Kafka Event Structure](#11-kafka-event-structure)
-
-\- \[12. API Endpoints](#12-api-endpoints)
-
-\- \[13. Deployment](#13-deployment)
-
-\- \[14. Future Scope](#14-future-scope)
-
-\- \[15. Team Members](#15-team-members)
-
-
+1. [Project Overview](#1-project-overview)
+2. [Project Objectives](#2-project-objectives)
+3. [Key Features](#3-key-features)
+4. [Technology Stack](#4-technology-stack)
+5. [System Architecture](#5-system-architecture)
+6. [Project Structure](#6-project-structure)
+7. [Team Responsibilities](#7-team-responsibilities)
+8. [Prerequisites](#8-prerequisites)
+9. [Environment Configuration](#9-environment-configuration)
+10. [Local Setup and Execution](#10-local-setup-and-execution)
+11. [Kafka Event Structure](#11-kafka-event-structure)
+12. [API Endpoints](#12-api-endpoints)
+13. [Deployment](#13-deployment)
+14. [Future Scope](#14-future-scope)
+15. [Team Members](#15-team-members)
 
 \---
 
@@ -694,7 +676,7 @@ The producer generates JSON events containing the following fields:
   "event_type": "check_in",
   "timestamp": "2026-09-21T10:50:58.123456+00:00"
 }
-
+```
 
 ### 12. API Endpoints
 
