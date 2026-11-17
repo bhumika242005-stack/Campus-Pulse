@@ -25,7 +25,7 @@ type CampusEvent = {
 
 // Replace with your actual assigned student ID when confirmed
 const STUDENT_ID = 'S0003'; // Replace with your assigned student ID
-const API_URL = 'http://172.18.149.145:8000';
+const API_URL = 'http://172.18.149.34:8080';
 
 const zones = ['Library', 'Canteen', 'Computer Lab'];
 
@@ -119,128 +119,99 @@ export default function HomeScreen() {
   };
 
   // Check-in
-  
+
 const handleCheckIn = async () => {
   if (!location) {
-    Alert.alert(
-      'GPS Required',
-      'Please detect your location first.'
-    );
+    Alert.alert('GPS Required', 'Please detect your location first.');
     return;
   }
 
   if (status === 'Checked In') {
-    Alert.alert(
-      'Notice',
-      'You are already checked in.'
-    );
+    Alert.alert('Notice', 'You are already checked in.');
     return;
   }
 
   try {
     setSubmitting(true);
 
-    const response = await fetch(`${API_URL}/events`, {
+    const event = generateEvent('check_in', selectedZone);
+
+    const response = await fetch(`${API_URL}/api/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        student_id: STUDENT_ID,
-        zone: getBackendZone(selectedZone),
-        event_type: 'check_in',
-      }),
+      body: JSON.stringify(event),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        data.detail || 'Unable to check in.'
-      );
+      throw new Error(data.details || data.error || 'Unable to check in.');
     }
-
-    const event: CampusEvent = data.event;
 
     setLastEvent(event);
     setActiveZone(selectedZone);
     setStatus('Checked In');
     setLastAction(new Date().toLocaleString());
 
-    Alert.alert(
-      'Check-in Successful',
-      `Your check-in for ${event.zone} was sent to the server!`
-    );
+    Alert.alert('Check-in Successful', 'Your event was published to Kafka.');
 
   } catch (error) {
     Alert.alert(
       'Check-in Failed',
-      error instanceof Error
-        ? error.message
-        : 'Unable to connect to Campus Pulse API.'
+      error instanceof Error ? error.message : 'Unable to connect.'
     );
   } finally {
     setSubmitting(false);
   }
 };
 
+
   // Check-out
-  
+
 const handleCheckOut = async () => {
   if (status !== 'Checked In' || !activeZone) {
-    Alert.alert(
-      'Notice',
-      'You are not currently checked in.'
-    );
+    Alert.alert('Notice', 'You are not currently checked in.');
     return;
   }
 
   try {
     setSubmitting(true);
 
-    const response = await fetch(`${API_URL}/events`, {
+    const event = generateEvent('check_out', activeZone);
+
+    const response = await fetch(`${API_URL}/api/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        student_id: STUDENT_ID,
-        zone: getBackendZone(activeZone),
-        event_type: 'check_out',
-      }),
+      body: JSON.stringify(event),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        data.detail || 'Unable to check out.'
-      );
+      throw new Error(data.details || data.error || 'Unable to check out.');
     }
-
-    const event: CampusEvent = data.event;
 
     setLastEvent(event);
     setStatus('Checked Out');
     setActiveZone(null);
     setLastAction(new Date().toLocaleString());
 
-    Alert.alert(
-      'Check-out Successful',
-      `Your check-out from ${event.zone} was sent to the server!`
-    );
+    Alert.alert('Check-out Successful', 'Your event was published to Kafka.');
 
   } catch (error) {
     Alert.alert(
       'Check-out Failed',
-      error instanceof Error
-        ? error.message
-        : 'Unable to connect to Campus Pulse API.'
+      error instanceof Error ? error.message : 'Unable to connect.'
     );
   } finally {
     setSubmitting(false);
   }
 };
+
 
   return (
     <SafeAreaView style={styles.container}>

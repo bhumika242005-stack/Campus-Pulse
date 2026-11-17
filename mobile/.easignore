@@ -1,0 +1,27 @@
+
+# Dependencies
+node_modules/
+
+# Expo temporary files
+.expo/
+dist/
+web-build/
+
+# Debug files
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Operating system files
+.DS_Store
+
+# Local environment files
+.env*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Native Android project is intentionally included.
+# Native iOS project is not needed for this Android build.
+ios/

@@ -5,11 +5,10 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const API_URL = 'http://172.18.149.145:8080';
+const API_URL = 'http://172.18.149.34:8080';
 
 type ZoneInfo = {
   zone: string;
@@ -57,11 +56,17 @@ export default function AnalyticsScreen() {
         // Process zone occupancy
         const zoneResult = results[0];
 
-        if (zoneResult.status === 'fulfilled' && zoneResult.value.ok) {
+        if (
+          zoneResult.status === 'fulfilled' &&
+          zoneResult.value.ok
+        ) {
           const zoneData = await zoneResult.value.json();
 
           const parsedZones: ZoneInfo[] = Object.entries(
-            zoneData as Record<string, string | { occupancy?: number }>
+            zoneData as Record<
+              string,
+              string | { occupancy?: number }
+            >
           ).map(([name, value]) => {
             const data =
               typeof value === 'string'
@@ -90,14 +95,18 @@ export default function AnalyticsScreen() {
         // Process recent PostgreSQL events
         const eventResult = results[1];
 
-        if (eventResult.status === 'fulfilled' && eventResult.value.ok) {
+        if (
+          eventResult.status === 'fulfilled' &&
+          eventResult.value.ok
+        ) {
           const eventData = await eventResult.value.json();
 
-          const parsedEvents: CampusEvent[] = Array.isArray(eventData)
-            ? eventData
-            : Array.isArray(eventData.events)
-              ? eventData.events
-              : [];
+          const parsedEvents: CampusEvent[] =
+            Array.isArray(eventData)
+              ? eventData
+              : Array.isArray(eventData.events)
+                ? eventData.events
+                : [];
 
           if (active) {
             setEvents(parsedEvents);
@@ -148,31 +157,49 @@ export default function AnalyticsScreen() {
     0
   );
 
-  // Count check-ins and check-outs in the returned event records
+  // Count check-ins and check-outs
   const totalCheckIns = events.filter(
-    (event) => event.event_type?.toLowerCase() === 'check_in'
+    event => event.event_type?.toLowerCase() === 'check_in'
   ).length;
 
   const totalCheckOuts = events.filter(
-    (event) => event.event_type?.toLowerCase() === 'check_out'
+    event => event.event_type?.toLowerCase() === 'check_out'
   ).length;
 
   // Build activity chart from actual event timestamps
   const hourCounts: Record<string, number> = {};
 
-  events.forEach((event) => {
+  events.forEach(event => {
     if (!event.timestamp) return;
 
     const date = new Date(event.timestamp);
 
     if (Number.isNaN(date.getTime())) return;
 
-    const hourKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`;
+    const hourKey = [
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+    ].join('-');
 
     hourCounts[hourKey] = (hourCounts[hourKey] || 0) + 1;
   });
 
   const hours: HourActivity[] = Object.entries(hourCounts)
+    .sort(([keyA], [keyB]) => {
+      const dateA = keyA.split('-').map(Number);
+      const dateB = keyB.split('-').map(Number);
+
+      for (let i = 0; i < dateA.length; i++) {
+        if (dateA[i] !== dateB[i]) {
+          return dateA[i] - dateB[i];
+        }
+      }
+
+      return 0;
+    })
+    .slice(-5)
     .map(([key, value]) => {
       const hour = Number(key.split('-')[3]);
 
@@ -186,12 +213,11 @@ export default function AnalyticsScreen() {
         }),
         value,
       };
-    })
-    .slice(-5);
+    });
 
   const maxActivity = Math.max(
     1,
-    ...hours.map((item) => item.value)
+    ...hours.map(item => item.value)
   );
 
   const getZoneName = (zone: string) =>
@@ -227,7 +253,6 @@ export default function AnalyticsScreen() {
         {/* Heading */}
         <View style={styles.heading}>
           <Text style={styles.title}>Campus Analytics</Text>
-
           <Text style={styles.description}>
             Understand campus occupancy and student activity.
           </Text>
@@ -263,11 +288,13 @@ export default function AnalyticsScreen() {
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryIcon}>👥</Text>
-
             <Text style={styles.summaryNumber}>
-              {loading ? '...' : occupancyConnected ? totalOccupancy : '--'}
+              {loading
+                ? '...'
+                : occupancyConnected
+                  ? totalOccupancy
+                  : '--'}
             </Text>
-
             <Text style={styles.summaryLabel}>
               Current Occupancy
             </Text>
@@ -275,9 +302,7 @@ export default function AnalyticsScreen() {
 
           <View style={styles.summaryCard}>
             <Text style={styles.summaryIcon}>📍</Text>
-
             <Text style={styles.summaryNumber}>3</Text>
-
             <Text style={styles.summaryLabel}>
               Monitored Zones
             </Text>
@@ -287,11 +312,13 @@ export default function AnalyticsScreen() {
         <View style={styles.summaryRow}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryIcon}>📥</Text>
-
             <Text style={styles.summaryNumber}>
-              {loading ? '...' : eventsConnected ? totalCheckIns : '--'}
+              {loading
+                ? '...'
+                : eventsConnected
+                  ? totalCheckIns
+                  : '--'}
             </Text>
-
             <Text style={styles.summaryLabel}>
               Check-ins (last 100 events)
             </Text>
@@ -299,11 +326,13 @@ export default function AnalyticsScreen() {
 
           <View style={styles.summaryCard}>
             <Text style={styles.summaryIcon}>📤</Text>
-
             <Text style={styles.summaryNumber}>
-              {loading ? '...' : eventsConnected ? totalCheckOuts : '--'}
+              {loading
+                ? '...'
+                : eventsConnected
+                  ? totalCheckOuts
+                  : '--'}
             </Text>
-
             <Text style={styles.summaryLabel}>
               Check-outs (last 100 events)
             </Text>
@@ -320,7 +349,7 @@ export default function AnalyticsScreen() {
             Current students present in each campus zone
           </Text>
 
-          {zones.map((zone) => {
+          {zones.map(zone => {
             const share =
               totalOccupancy > 0
                 ? (zone.occupancy / totalOccupancy) * 100
@@ -378,7 +407,7 @@ export default function AnalyticsScreen() {
             Events grouped by hour from the latest 100 records
           </Text>
 
-          {!eventsConnected || hours.length === 0 ? (
+          {(!eventsConnected || hours.length === 0) ? (
             <View style={styles.emptyChart}>
               <Text style={styles.emptyText}>
                 {eventsConnected
@@ -388,7 +417,7 @@ export default function AnalyticsScreen() {
             </View>
           ) : (
             <View style={styles.chart}>
-              {hours.map((item) => {
+              {hours.map((item, index) => {
                 const barHeight =
                   (item.value / maxActivity) * 100;
 
@@ -397,7 +426,7 @@ export default function AnalyticsScreen() {
 
                 return (
                   <View
-                    key={item.time}
+                    key={`${item.time}-${index}`}
                     style={styles.barContainer}
                   >
                     <Text style={styles.barValue}>

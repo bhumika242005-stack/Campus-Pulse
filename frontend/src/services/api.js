@@ -1,36 +1,27 @@
+
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-async function apiRequest(endpoint, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
+async function apiRequest(endpoint) {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
 
   if (!response.ok) {
-    throw new Error(
-      `API request failed: ${response.status} ${response.statusText}`
-    );
+    throw new Error(`API error: ${response.status}`);
   }
 
-  return response.json();
+  const text = await response.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
-export async function getDashboardData() {
-  return apiRequest("/api/dashboard");
-}
+export const getZones = () => apiRequest("/api/zones");
 
-export async function getAnalyticsData() {
-  return apiRequest("/api/analytics");
-}
+export const getEvents = () => apiRequest("/api/events");
 
-export async function getAlerts() {
-  return apiRequest("/api/alerts");
-}
-
-export async function getEvents() {
-  return apiRequest("/api/events");
-}
+export const getAlerts = () => apiRequest("/api/alerts");

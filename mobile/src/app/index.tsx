@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const API_URL = 'http://172.18.149.145:8080';
+const API_URL = 'http://172.18.149.34:8080';
 
 type ZoneInfo = {
   zone: string;
@@ -22,6 +22,20 @@ type ZoneResponse = {
   occupancy?: number | string;
   alert?: string | null;
   updated_at?: string;
+};
+
+type EventInfo = {
+  event_id?: string;
+  student_id?: string;
+  zone?: string;
+  event_type?: string;
+  timestamp?: string;
+};
+
+type EventsResponse = {
+  value?: EventInfo[];
+  events?: EventInfo[];
+  Count?: number;
 };
 
 const initialZones: ZoneInfo[] = [
@@ -72,22 +86,32 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch live occupancy data from Member 4's backend
+  const [activeAlerts, setActiveAlerts] = useState(0);
+  const [checkinsToday, setCheckinsToday] = useState(0);
+  const [checkoutsToday, setCheckoutsToday] = useState(0);
+
   useEffect(() => {
     let active = true;
 
-    const fetchOccupancy = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/zones`);
+        const [zonesResponse, eventsResponse] = await Promise.all([
+          fetch(`${API_URL}/api/zones`),
+          fetch(`${API_URL}/api/events`),
+        ]);
 
-        if (!response.ok) {
-          throw new Error('Unable to fetch occupancy data.');
+        if (!zonesResponse.ok || !eventsResponse.ok) {
+          throw new Error('Unable to fetch dashboard data.');
         }
 
-        const result = await response.json();
+        const zonesResult = await zonesResponse.json();
 
+        const eventsResult: EventsResponse | EventInfo[] =
+          await eventsResponse.json();
+
+        // Process zone occupancy
         const parsedZones: ZoneInfo[] = Object.entries(
-          result as Record<string, string | ZoneResponse>
+          zonesResult as Record<string, string | ZoneResponse>
         ).map(([name, value]) => {
           const zoneData: ZoneResponse =
             typeof value === 'string'
@@ -95,7 +119,7 @@ export default function DashboardScreen() {
               : value;
 
           return {
-            zone: name,
+            zone: zoneData.zone ?? name,
             occupancy: Math.max(
               0,
               Number(zoneData.occupancy) || 0
@@ -105,13 +129,88 @@ export default function DashboardScreen() {
           };
         });
 
+        // Extract events from the API response
+        const events: EventInfo[] = Array.isArray(eventsResult)
+          ? eventsResult
+          : Array.isArray(eventsResult.value)
+            ? eventsResult.value
+            : Array.isArray(eventsResult.events)
+              ? eventsResult.events
+              : [];
+
+        console.log('DASHBOARD EVENTS:', events.length);
+        console.log('DASHBOARD FIRST EVENT:', events[0]);
+        console.log('DASHBOARD TODAY:', new Date().toString());
+
+        // Get today's date in the phone's local timezone
+        const today = new Date();
+
+        const todayString = [
+          today.getFullYear(),
+          String(today.getMonth() + 1).padStart(2, '0'),
+          String(today.getDate()).padStart(2, '0'),
+        ].join('-');
+
+        // Filter events recorded today
+        const todaysEvents = events.filter((event) => {
+          if (!event.timestamp) return false;
+
+          // Correct the 5 hour 30 minute shift introduced by the backend
+          const eventDate = new Date(event.timestamp);
+          if (Number.isNaN(eventDate.getTime())) {
+            return false;
+          }
+
+          const eventDateString = [
+            eventDate.getFullYear(),
+            String(eventDate.getMonth() + 1).padStart(2, '0'),
+            String(eventDate.getDate()).padStart(2, '0'),
+          ].join('-');
+
+          return eventDateString === todayString;
+        });
+
+        // Count check-ins and check-outs
+        const checkins = todaysEvents.filter(
+          (event) =>
+            event.event_type?.trim().toLowerCase() === 'check_in'
+        ).length;
+
+        const checkouts = todaysEvents.filter(
+          (event) =>
+            event.event_type?.trim().toLowerCase() === 'check_out'
+        ).length;
+
+        console.log('TODAY EVENTS:', todaysEvents.length);
+        console.log('TODAY CHECKINS:', checkins);
+        console.log('TODAY CHECKOUTS:', checkouts);
+
+        // Count active alerts from zone data
+        const alerts = parsedZones.filter((zone) => {
+          const alert = zone.alert?.trim().toLowerCase();
+
+          return (
+            alert !== undefined &&
+            alert !== null &&
+            alert !== '' &&
+            alert !== 'none' &&
+            alert !== 'null' &&
+            alert !== 'normal'
+          );
+        }).length;
+
         if (active) {
           setZones(parsedZones);
+          setActiveAlerts(alerts);
+          setCheckinsToday(checkins);
+          setCheckoutsToday(checkouts);
           setConnected(true);
           setError('');
           setLoading(false);
         }
       } catch (err) {
+        console.error('Dashboard fetch error:', err);
+
         if (active) {
           setConnected(false);
           setError('Unable to connect to the live server.');
@@ -120,9 +219,9 @@ export default function DashboardScreen() {
       }
     };
 
-    fetchOccupancy();
+    fetchDashboardData();
 
-    const interval = setInterval(fetchOccupancy, 5000);
+    const interval = setInterval(fetchDashboardData, 5000);
 
     return () => {
       active = false;
@@ -130,7 +229,7 @@ export default function DashboardScreen() {
     };
   }, []);
 
-  // Calculate total occupancy across all zones
+  // Calculate total occupancy
   const totalOccupancy = zones.reduce(
     (total, zone) => total + zone.occupancy,
     0
@@ -230,7 +329,9 @@ export default function DashboardScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📍</Text>
 
-            <Text style={styles.statNumber}>3</Text>
+            <Text style={styles.statNumber}>
+              {loading ? '...' : zones.length}
+            </Text>
 
             <Text style={styles.statLabel}>
               Monitored Zones
@@ -240,7 +341,9 @@ export default function DashboardScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>⚠️</Text>
 
-            <Text style={styles.statNumber}>--</Text>
+            <Text style={styles.statNumber}>
+              {loading ? '...' : activeAlerts}
+            </Text>
 
             <Text style={styles.statLabel}>
               Active Alerts
@@ -252,7 +355,9 @@ export default function DashboardScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📥</Text>
 
-            <Text style={styles.statNumber}>--</Text>
+            <Text style={styles.statNumber}>
+              {loading ? '...' : checkinsToday}
+            </Text>
 
             <Text style={styles.statLabel}>
               Check-ins Today
@@ -262,7 +367,9 @@ export default function DashboardScreen() {
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📤</Text>
 
-            <Text style={styles.statNumber}>--</Text>
+            <Text style={styles.statNumber}>
+              {loading ? '...' : checkoutsToday}
+            </Text>
 
             <Text style={styles.statLabel}>
               Check-outs Today
@@ -278,7 +385,7 @@ export default function DashboardScreen() {
             </Text>
 
             <Text style={styles.viewText}>
-              3 Zones
+              {zones.length} Zones
             </Text>
           </View>
 

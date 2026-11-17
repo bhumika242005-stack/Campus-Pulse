@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const API_URL = 'http://172.18.149.145:8080';
+const API_URL = 'http://172.18.149.34:8080';
 
 type CampusAlert = {
   alert_type?: string;
