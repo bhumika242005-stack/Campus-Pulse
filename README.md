@@ -118,60 +118,34 @@ The project aims to make campus monitoring more efficient through digital tracki
 
 ## 3. Key Features
 
-
-
 | Feature | Description |
-
 |---|---|
-
 | Location-Based Tracking | Supports student check-in and check-out through the mobile application. |
-
 | Event Streaming | Uses Apache Kafka to publish and consume campus activity events. |
-
 | Event Processing | Processes and validates incoming events using Python. |
-
 | Occupancy Monitoring | Tracks student presence across campus zones. |
-
 | Database Management | Stores event and student presence information in PostgreSQL. |
-
 | Redis Integration | Supports fast access to monitoring and alert information. |
-
 | Analytics Dashboard | Displays campus activity and occupancy information. |
-
 | Alert Monitoring | Provides campus alert information. |
-
-| Backend Integration | Uses REST APIs and WebSocket configuration for application communication. |
+| Backend Integration | Uses REST APIs and WebSocket configuration. |
 
 
 
 ## 4. Technology Stack
 
-
-
 | Component | Technology |
-
 |---|---|
-
 | Mobile Application | React Native, Expo |
-
 | Web Dashboard | React |
-
 | Backend | Java, Spring Boot |
-
 | Event Producer | Python |
-
 | Event Consumer and Processing | Python |
-
 | Message Broker | Apache Kafka |
-
 | Relational Database | PostgreSQL |
-
 | In-Memory Data Store | Redis |
-
 | Containerization | Docker |
-
-| Mobile Builds | Expo Application Services (EAS) |
-
+| Mobile Builds | Expo EAS |
 | Version Control | Git and GitHub |
 
 
@@ -366,71 +340,37 @@ Campus-Pulse/
 
 ## 7. Team Responsibilities
 
-
-
-The project was developed collaboratively, with each member responsible for a specific module.
-
-
-
 | Member | Responsibility | Technologies |
-
 |---|---|---|
-
 | Member 1 | Kafka Consumer, Stream Processing, PostgreSQL, Redis and Alert Processing | Python, Kafka, PostgreSQL, Redis |
-
 | Member 2 | Kafka Producer, Event Generation and Publishing | Python, Kafka, Docker |
-
 | Member 3 | Mobile Application UI, Location-Based Check-in/Check-out and API Integration | React Native, Expo |
-
 | Member 4 | Spring Boot Backend, REST APIs, WebSocket Integration and React Dashboard | Java, Spring Boot, React |
-
 
 
 ## 8. Prerequisites
 
-
-
 Install the following software before running the project:
 
-
-
-\- \*\*Git\*\* – Version control.
-
-\- \*\*Java Development Kit (JDK)\*\* – Spring Boot backend.
-
-\- \*\*Python 3\*\* – Producer and processing modules.
-
-\- \*\*Node.js and npm\*\* – React and Expo applications.
-
-\- \*\*Docker Desktop\*\* – Kafka container.
-
-\- \*\*Android device or emulator\*\* – Mobile application testing.
-
+- **Git:** Version control.
+- **Java Development Kit (JDK):** Spring Boot backend.
+- **Python 3:** Producer and processing modules.
+- **Node.js and npm:** React and Expo applications.
+- **Docker Desktop:** Kafka container.
+- **Android device or emulator:** Mobile application testing.
 
 
 ## 9. Environment Configuration
 
-
-
 The backend and Python processing modules use environment variables for database configuration.
 
-
-
 | Variable | Purpose |
-
 |---|---|
-
 | `DB_HOST` | PostgreSQL hostname |
-
 | `DB_PORT` | PostgreSQL port |
-
 | `DB_NAME` | Database name |
-
 | `DB_USER` | Database username |
-
 | `DB_PASSWORD` | Database password |
-
-
 
 Never commit actual database passwords, API keys or other sensitive credentials to GitHub.
 
@@ -734,57 +674,29 @@ Use an Android device or emulator to test the mobile application.
 
 ## 11. Kafka Event Structure
 
-
-
 The producer generates JSON events containing the following fields:
 
-
-
 | Field | Description |
-
 |---|---|
-
 | `event_id` | Unique event identifier |
-
 | `student_id` | Student identifier |
-
 | `zone` | Campus zone |
-
 | `event_type` | Event type, such as check-in |
-
 | `timestamp` | Event timestamp in ISO format |
-
-
 
 ### Example Event
 
-
-
 ```json
-
 {
-
-&#x20; "event_id": "70d7bcbd-ec81-4ea4-9eb6-da5fcc74b97f",
-
-&#x20; "student_id": "S0369",
-
-&#x20; "zone": "Library",
-
-&#x20; "event_type": "check_in",
-
-&#x20; "timestamp": "2026-09-21T10:50:58.123456+00:00"
-
+  "event_id": "70d7bcbd-ec81-4ea4-9eb6-da5fcc74b97f",
+  "student_id": "S0369",
+  "zone": "Library",
+  "event_type": "check_in",
+  "timestamp": "2026-09-21T10:50:58.123456+00:00"
 }
 
-```
 
-
-
-The producer uses the zone as the Kafka message key and publishes events to the `campus-events` topic.
-
-
-
-## 12. API Endpoints
+### 12. API Endpoints
 
 
 
@@ -858,45 +770,13 @@ Deployment-specific environment variables and secrets will be configured securel
 
 ## 15. Team Members
 
-
-
 | Member | Name | Responsibility |
-
 |---|---|---|
-
 | Member 1 | Dishita | Backend Processing and Database |
-
 | Member 2 | Bhumika | Kafka Producer and Event Generation |
-
 | Member 3 | Uttra | Mobile Application Development |
-
 | Member 4 | Ishani | Backend APIs and Web Dashboard |
 
+---
 
-
-\---
-
-
-
-<p align="center">
-
-&#x20; <b>Campus Pulse</b><br/>
-
-&#x20; Real-Time Campus Monitoring System
-
-</p>
-
-
-
-<p align="center">
-
-&#x20; <a href="https://github.com/bhumika242005-stack/Campus-Pulse">GitHub Repository</a>
-
-&#x20; &nbsp; | &nbsp;
-
-&#x20; <code>integration/final-system</code>
-
-</p>
-
-
-
+**Repository:** [Campus Pulse on GitHub](https://github.com/bhumika242005-stack/Campus-Pulse)
