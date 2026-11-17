@@ -1,8 +1,8 @@
-\# Campus Pulse
+# Campus Pulse
 
 
 
-<h3 align="center">Real-Time Campus Entry, Exit \& Occupancy Monitoring System</h3>
+<h3 align="center">Real-Time Campus Entry, Exit & Occupancy Monitoring System</h3>
 
 
 
@@ -16,13 +16,13 @@
 
 <p align="center">
 
-&#x20; <img src="https://img.shields.io/badge/React\_Native-Expo-blue?logo=react" alt="React Native"/>
+&#x20; <img src="https://img.shields.io/badge/React_Native-Expo-blue?logo=react" alt="React Native"/>
 
-&#x20; <img src="https://img.shields.io/badge/Java-Spring\_Boot-green?logo=springboot" alt="Spring Boot"/>
+&#x20; <img src="https://img.shields.io/badge/Java-Spring_Boot-green?logo=springboot" alt="Spring Boot"/>
 
 &#x20; <img src="https://img.shields.io/badge/Python-Processing-yellow?logo=python" alt="Python"/>
 
-&#x20; <img src="https://img.shields.io/badge/Apache\_Kafka-Event\_Streaming-black?logo=apachekafka" alt="Kafka"/>
+&#x20; <img src="https://img.shields.io/badge/Apache_Kafka-Event_Streaming-black?logo=apachekafka" alt="Kafka"/>
 
 &#x20; <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?logo=postgresql" alt="PostgreSQL"/>
 
@@ -36,7 +36,7 @@
 
 
 
-\## Table of Contents
+## Table of Contents
 
 
 
@@ -76,7 +76,7 @@
 
 
 
-\## 1. Project Overview
+## 1. Project Overview
 
 
 
@@ -96,7 +96,7 @@ The project aims to make campus monitoring more efficient through digital tracki
 
 
 
-\## 2. Project Objectives
+## 2. Project Objectives
 
 
 
@@ -116,7 +116,7 @@ The project aims to make campus monitoring more efficient through digital tracki
 
 
 
-\## 3. Key Features
+## 3. Key Features
 
 
 
@@ -144,7 +144,7 @@ The project aims to make campus monitoring more efficient through digital tracki
 
 
 
-\## 4. Technology Stack
+## 4. Technology Stack
 
 
 
@@ -176,7 +176,7 @@ The project aims to make campus monitoring more efficient through digital tracki
 
 
 
-\## 5. System Architecture
+## 5. System Architecture
 
 
 
@@ -232,7 +232,7 @@ flowchart TD
 
 
 
-\### Data Processing Workflow
+### Data Processing Workflow
 
 
 
@@ -260,7 +260,7 @@ flowchart TD
 
 
 
-\## 6. Project Structure
+## 6. Project Structure
 
 
 
@@ -364,7 +364,7 @@ Campus-Pulse/
 
 
 
-\## 7. Team Responsibilities
+## 7. Team Responsibilities
 
 
 
@@ -386,7 +386,7 @@ The project was developed collaboratively, with each member responsible for a sp
 
 
 
-\## 8. Prerequisites
+## 8. Prerequisites
 
 
 
@@ -408,7 +408,7 @@ Install the following software before running the project:
 
 
 
-\## 9. Environment Configuration
+## 9. Environment Configuration
 
 
 
@@ -420,15 +420,15 @@ The backend and Python processing modules use environment variables for database
 
 |---|---|
 
-| `DB\_HOST` | PostgreSQL hostname |
+| `DB_HOST` | PostgreSQL hostname |
 
-| `DB\_PORT` | PostgreSQL port |
+| `DB_PORT` | PostgreSQL port |
 
-| `DB\_NAME` | Database name |
+| `DB_NAME` | Database name |
 
-| `DB\_USER` | Database username |
+| `DB_USER` | Database username |
 
-| `DB\_PASSWORD` | Database password |
+| `DB_PASSWORD` | Database password |
 
 
 
@@ -436,11 +436,11 @@ Never commit actual database passwords, API keys or other sensitive credentials 
 
 
 
-\## 10. Local Setup and Execution
+## 10. Local Setup and Execution
 
 
 
-\### Step 1: Clone the repository
+### Step 1: Clone the repository
 
 
 
@@ -460,7 +460,7 @@ git checkout integration/final-system
 
 
 
-\### Step 2: Start Kafka
+### Step 2: Start Kafka
 
 
 
@@ -488,7 +488,7 @@ docker ps
 
 
 
-\### Step 3: Create the Kafka topic
+### Step 3: Create the Kafka topic
 
 
 
@@ -504,7 +504,7 @@ docker exec campus-kafka /opt/kafka/bin/kafka-topics.sh --create --topic campus-
 
 
 
-\### Step 4: Run the Python Producer
+### Step 4: Run the Python Producer
 
 
 
@@ -548,7 +548,7 @@ The producer publishes simulated campus activity events to the `campus-events` K
 
 
 
-\### Step 5: Run the Python Processing Module
+### Step 5: Run the Python Processing Module
 
 
 
@@ -582,15 +582,15 @@ Configure the PostgreSQL environment variables in PowerShell:
 
 ```powershell
 
-$env:DB\_HOST="localhost"
+$env:DB_HOST="localhost"
 
-$env:DB\_PORT="5432"
+$env:DB_PORT="5432"
 
-$env:DB\_NAME="campus\_pulse"
+$env:DB_NAME="campus_pulse"
 
-$env:DB\_USER="campus"
+$env:DB_USER="campus"
 
-$env:DB\_PASSWORD="your\_database\_password"
+$env:DB_PASSWORD="your_database_password"
 
 ```
 
@@ -604,7 +604,7 @@ Run the appropriate consumer or aggregator entry point according to the module c
 
 
 
-\### Step 6: Run the Spring Boot Backend
+### Step 6: Run the Spring Boot Backend
 
 
 
@@ -620,7 +620,7 @@ cd backend
 
 
 
-Configure the required environment variables, including `DB\_PASSWORD`.
+Configure the required environment variables, including `DB_PASSWORD`.
 
 
 
@@ -644,7 +644,7 @@ The backend uses port `8080` with the current local configuration.
 
 
 
-\### Step 7: Run the React Web Dashboard
+### Step 7: Run the React Web Dashboard
 
 
 
@@ -684,7 +684,7 @@ npm run dev
 
 
 
-\### Step 8: Run the Mobile Application
+### Step 8: Run the Mobile Application
 
 
 
@@ -732,7 +732,7 @@ Use an Android device or emulator to test the mobile application.
 
 
 
-\## 11. Kafka Event Structure
+## 11. Kafka Event Structure
 
 
 
@@ -744,19 +744,19 @@ The producer generates JSON events containing the following fields:
 
 |---|---|
 
-| `event\_id` | Unique event identifier |
+| `event_id` | Unique event identifier |
 
-| `student\_id` | Student identifier |
+| `student_id` | Student identifier |
 
 | `zone` | Campus zone |
 
-| `event\_type` | Event type, such as check-in |
+| `event_type` | Event type, such as check-in |
 
 | `timestamp` | Event timestamp in ISO format |
 
 
 
-\### Example Event
+### Example Event
 
 
 
@@ -764,13 +764,13 @@ The producer generates JSON events containing the following fields:
 
 {
 
-&#x20; "event\_id": "70d7bcbd-ec81-4ea4-9eb6-da5fcc74b97f",
+&#x20; "event_id": "70d7bcbd-ec81-4ea4-9eb6-da5fcc74b97f",
 
-&#x20; "student\_id": "S0369",
+&#x20; "student_id": "S0369",
 
 &#x20; "zone": "Library",
 
-&#x20; "event\_type": "check\_in",
+&#x20; "event_type": "check_in",
 
 &#x20; "timestamp": "2026-09-21T10:50:58.123456+00:00"
 
@@ -784,7 +784,7 @@ The producer uses the zone as the Kafka message key and publishes events to the 
 
 
 
-\## 12. API Endpoints
+## 12. API Endpoints
 
 
 
@@ -808,7 +808,7 @@ The backend also contains WebSocket configuration for live update communication.
 
 
 
-\## 13. Deployment
+## 13. Deployment
 
 
 
@@ -838,7 +838,7 @@ Deployment-specific environment variables and secrets will be configured securel
 
 
 
-\## 14. Future Scope
+## 14. Future Scope
 
 
 
@@ -856,7 +856,7 @@ Deployment-specific environment variables and secrets will be configured securel
 
 
 
-\## 15. Team Members
+## 15. Team Members
 
 
 
@@ -892,7 +892,7 @@ Deployment-specific environment variables and secrets will be configured securel
 
 &#x20; <a href="https://github.com/bhumika242005-stack/Campus-Pulse">GitHub Repository</a>
 
-&#x20; \&nbsp; | \&nbsp;
+&#x20; &nbsp; | &nbsp;
 
 &#x20; <code>integration/final-system</code>
 
