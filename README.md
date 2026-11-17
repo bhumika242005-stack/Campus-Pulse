@@ -2,15 +2,33 @@
 
 
 
-\### Real-Time Campus Entry, Exit and Occupancy Monitoring System
+<h3 align="center">Real-Time Campus Entry, Exit \& Occupancy Monitoring System</h3>
 
 
 
-Campus Pulse is a software-based campus monitoring system that helps track student entry and exit activity through a mobile application. It combines location-based check-in/check-out functionality with event streaming, backend processing, database storage and monitoring dashboards.
+<p align="center">
+
+&#x20; A software-based campus monitoring system for location-based student check-in, check-out, real-time event processing and campus occupancy monitoring.
+
+</p>
 
 
 
-The system is designed to provide campus activity information, zone occupancy, analytics and alerts.
+<p align="center">
+
+&#x20; <img src="https://img.shields.io/badge/React\_Native-Expo-blue?logo=react" alt="React Native"/>
+
+&#x20; <img src="https://img.shields.io/badge/Java-Spring\_Boot-green?logo=springboot" alt="Spring Boot"/>
+
+&#x20; <img src="https://img.shields.io/badge/Python-Processing-yellow?logo=python" alt="Python"/>
+
+&#x20; <img src="https://img.shields.io/badge/Apache\_Kafka-Event\_Streaming-black?logo=apachekafka" alt="Kafka"/>
+
+&#x20; <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?logo=postgresql" alt="PostgreSQL"/>
+
+&#x20; <img src="https://img.shields.io/badge/Redis-Cache-red?logo=redis" alt="Redis"/>
+
+</p>
 
 
 
@@ -18,7 +36,67 @@ The system is designed to provide campus activity information, zone occupancy, a
 
 
 
-\## 1. Project Objectives
+\## Table of Contents
+
+
+
+\- \[1. Project Overview](#1-project-overview)
+
+\- \[2. Project Objectives](#2-project-objectives)
+
+\- \[3. Key Features](#3-key-features)
+
+\- \[4. Technology Stack](#4-technology-stack)
+
+\- \[5. System Architecture](#5-system-architecture)
+
+\- \[6. Project Structure](#6-project-structure)
+
+\- \[7. Team Responsibilities](#7-team-responsibilities)
+
+\- \[8. Prerequisites](#8-prerequisites)
+
+\- \[9. Environment Configuration](#9-environment-configuration)
+
+\- \[10. Local Setup and Execution](#10-local-setup-and-execution)
+
+\- \[11. Kafka Event Structure](#11-kafka-event-structure)
+
+\- \[12. API Endpoints](#12-api-endpoints)
+
+\- \[13. Deployment](#13-deployment)
+
+\- \[14. Future Scope](#14-future-scope)
+
+\- \[15. Team Members](#15-team-members)
+
+
+
+\---
+
+
+
+\## 1. Project Overview
+
+
+
+\*\*Campus Pulse\*\* is a software-based campus monitoring application designed to track student entry and exit activity through a location-based mobile application.
+
+
+
+The system combines mobile application functionality with a real-time data processing pipeline to monitor campus activity across different zones.
+
+
+
+Student activity events are processed using Apache Kafka and Python, with PostgreSQL and Redis supporting data storage and retrieval. The system also provides a web dashboard, analytics and alert information.
+
+
+
+The project aims to make campus monitoring more efficient through digital tracking, event processing and centralized information management.
+
+
+
+\## 2. Project Objectives
 
 
 
@@ -34,37 +112,39 @@ The system is designed to provide campus activity information, zone occupancy, a
 
 \- Present monitoring information through dashboards and analytics.
 
-
-
-\## 2. Key Features
-
-
-
-\- Mobile application for student check-in and check-out.
-
-\- Location-based entry and exit functionality.
-
-\- Event generation and Kafka message publishing.
-
-\- Kafka-based event streaming.
-
-\- Python event consumption and processing.
-
-\- PostgreSQL storage for events and student presence.
-
-\- Redis integration for fast data access and alert information.
-
-\- Campus zone occupancy monitoring.
-
-\- Analytics dashboard.
-
-\- Alert information and monitoring.
-
-\- REST API and WebSocket backend integration.
+\- Improve the accessibility of campus activity information.
 
 
 
-\## 3. Technology Stack
+\## 3. Key Features
+
+
+
+| Feature | Description |
+
+|---|---|
+
+| Location-Based Tracking | Supports student check-in and check-out through the mobile application. |
+
+| Event Streaming | Uses Apache Kafka to publish and consume campus activity events. |
+
+| Event Processing | Processes and validates incoming events using Python. |
+
+| Occupancy Monitoring | Tracks student presence across campus zones. |
+
+| Database Management | Stores event and student presence information in PostgreSQL. |
+
+| Redis Integration | Supports fast access to monitoring and alert information. |
+
+| Analytics Dashboard | Displays campus activity and occupancy information. |
+
+| Alert Monitoring | Provides campus alert information. |
+
+| Backend Integration | Uses REST APIs and WebSocket configuration for application communication. |
+
+
+
+\## 4. Technology Stack
 
 
 
@@ -72,31 +152,35 @@ The system is designed to provide campus activity information, zone occupancy, a
 
 |---|---|
 
-| Mobile application | React Native, Expo |
+| Mobile Application | React Native, Expo |
 
-| Web dashboard | React |
+| Web Dashboard | React |
 
 | Backend | Java, Spring Boot |
 
-| Event producer | Python |
+| Event Producer | Python |
 
-| Event consumer and processing | Python |
+| Event Consumer and Processing | Python |
 
-| Message broker | Apache Kafka |
+| Message Broker | Apache Kafka |
 
-| Relational database | PostgreSQL |
+| Relational Database | PostgreSQL |
 
-| In-memory data store | Redis |
+| In-Memory Data Store | Redis |
 
 | Containerization | Docker |
 
-| Mobile builds | Expo Application Services (EAS) |
+| Mobile Builds | Expo Application Services (EAS) |
 
-| Version control | Git, GitHub |
+| Version Control | Git and GitHub |
 
 
 
-\## 4. System Architecture
+\## 5. System Architecture
+
+
+
+The Campus Pulse architecture consists of a mobile application, backend services, event streaming, data processing and database components.
 
 
 
@@ -104,29 +188,41 @@ The system is designed to provide campus activity information, zone occupancy, a
 
 flowchart TD
 
-&#x20;   A\[Mobile Application] --> B\[Spring Boot Backend]
+&#x20;   A\["Campus Pulse Mobile App"] --> B\["Spring Boot Backend"]
 
-&#x20;   C\[React Web Dashboard] --> B
+&#x20;   C\["React Web Dashboard"] --> B
 
-&#x20;   B --> D\[Apache Kafka]
 
-&#x20;   E\[Python Producer and Simulator] --> D
 
-&#x20;   D --> F\[Python Consumer]
+&#x20;   B --> D\["Apache Kafka"]
 
-&#x20;   F --> G\[Event Aggregator]
+&#x20;   E\["Python Producer / Simulator"] --> D
 
-&#x20;   G --> H\[PostgreSQL]
 
-&#x20;   G --> I\[Redis]
+
+&#x20;   D --> F\["Python Kafka Consumer"]
+
+&#x20;   F --> G\["Event Validation and Aggregation"]
+
+
+
+&#x20;   G --> H\[("PostgreSQL")]
+
+&#x20;   G --> I\[("Redis")]
+
+
 
 &#x20;   B --> H
 
 &#x20;   B --> I
 
-&#x20;   B --> J\[REST APIs]
 
-&#x20;   B --> K\[WebSocket Updates]
+
+&#x20;   B --> J\["REST APIs"]
+
+&#x20;   B --> K\["WebSocket"]
+
+
 
 &#x20;   J --> C
 
@@ -160,11 +256,11 @@ flowchart TD
 
 
 
-The Python producer and simulator also support simulated campus activity for testing the event-streaming pipeline.
+\*\*Note:\*\* The Python producer and simulator also generate simulated campus activity for testing the event-streaming pipeline. This is separate from the mobile application's location-based workflow.
 
 
 
-\## 5. Project Structure
+\## 6. Project Structure
 
 
 
@@ -268,7 +364,11 @@ Campus-Pulse/
 
 
 
-\## 6. Module Responsibilities
+\## 7. Team Responsibilities
+
+
+
+The project was developed collaboratively, with each member responsible for a specific module.
 
 
 
@@ -286,29 +386,29 @@ Campus-Pulse/
 
 
 
-\## 7. Prerequisites
+\## 8. Prerequisites
 
 
 
-Install the following software:
+Install the following software before running the project:
 
 
 
-\- Git
+\- \*\*Git\*\* – Version control.
 
-\- Java Development Kit (JDK)
+\- \*\*Java Development Kit (JDK)\*\* – Spring Boot backend.
 
-\- Python 3
+\- \*\*Python 3\*\* – Producer and processing modules.
 
-\- Node.js and npm
+\- \*\*Node.js and npm\*\* – React and Expo applications.
 
-\- Docker Desktop
+\- \*\*Docker Desktop\*\* – Kafka container.
 
-\- Android device or emulator for mobile testing
+\- \*\*Android device or emulator\*\* – Mobile application testing.
 
 
 
-\## 8. Configuration
+\## 9. Environment Configuration
 
 
 
@@ -332,11 +432,11 @@ The backend and Python processing modules use environment variables for database
 
 
 
-Never commit database passwords, API keys or other credentials to GitHub.
+Never commit actual database passwords, API keys or other sensitive credentials to GitHub.
 
 
 
-\## 9. Running the Project Locally
+\## 10. Local Setup and Execution
 
 
 
@@ -348,17 +448,11 @@ Never commit database passwords, API keys or other credentials to GitHub.
 
 git clone https://github.com/bhumika242005-stack/Campus-Pulse.git
 
+
+
 cd Campus-Pulse
 
-```
 
-
-
-Switch to the integrated project branch:
-
-
-
-```bash
 
 git checkout integration/final-system
 
@@ -370,7 +464,7 @@ git checkout integration/final-system
 
 
 
-From the project root:
+From the project root directory:
 
 
 
@@ -382,7 +476,7 @@ docker compose up -d
 
 
 
-Check the running container:
+Verify that the Kafka container is running:
 
 
 
@@ -398,6 +492,10 @@ docker ps
 
 
 
+Create the `campus-events` topic:
+
+
+
 ```bash
 
 docker exec campus-kafka /opt/kafka/bin/kafka-topics.sh --create --topic campus-events --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
@@ -406,11 +504,11 @@ docker exec campus-kafka /opt/kafka/bin/kafka-topics.sh --create --topic campus-
 
 
 
-\### Step 4: Run the Python producer
+\### Step 4: Run the Python Producer
 
 
 
-Open a terminal in the project root:
+Open a new terminal:
 
 
 
@@ -446,11 +544,11 @@ python producer.py
 
 
 
-The producer publishes simulated campus events to the `campus-events` Kafka topic.
+The producer publishes simulated campus activity events to the `campus-events` Kafka topic.
 
 
 
-\### Step 5: Run the Python processing module
+\### Step 5: Run the Python Processing Module
 
 
 
@@ -478,11 +576,7 @@ pip install -r requirements.txt
 
 
 
-Configure the database environment variables and ensure PostgreSQL and Redis are running.
-
-
-
-For Windows PowerShell, example environment variables are:
+Configure the PostgreSQL environment variables in PowerShell:
 
 
 
@@ -502,11 +596,15 @@ $env:DB\_PASSWORD="your\_database\_password"
 
 
 
+Ensure PostgreSQL and Redis are running.
+
+
+
 Run the appropriate consumer or aggregator entry point according to the module configuration.
 
 
 
-\### Step 6: Run the Spring Boot backend
+\### Step 6: Run the Spring Boot Backend
 
 
 
@@ -522,11 +620,15 @@ cd backend
 
 
 
-Configure the required environment variables, including `DB\_PASSWORD`, and ensure Kafka, PostgreSQL and Redis are available.
+Configure the required environment variables, including `DB\_PASSWORD`.
 
 
 
-Run:
+Ensure Kafka, PostgreSQL and Redis are available.
+
+
+
+Run the backend:
 
 
 
@@ -538,11 +640,11 @@ Run:
 
 
 
-The backend runs on port `8080` with the current local configuration.
+The backend uses port `8080` with the current local configuration.
 
 
 
-\### Step 7: Run the React frontend
+\### Step 7: Run the React Web Dashboard
 
 
 
@@ -550,7 +652,7 @@ Open another terminal:
 
 
 
-```powershell
+```bash
 
 cd frontend
 
@@ -570,7 +672,7 @@ npm install
 
 
 
-Start the frontend using its configured development script:
+Start the frontend using the development script configured in `package.json`:
 
 
 
@@ -582,7 +684,7 @@ npm run dev
 
 
 
-\### Step 8: Run the Expo mobile application
+\### Step 8: Run the Mobile Application
 
 
 
@@ -590,7 +692,7 @@ Open another terminal:
 
 
 
-```powershell
+```bash
 
 cd mobile
 
@@ -626,11 +728,11 @@ Use an Android device or emulator to test the mobile application.
 
 
 
-\*\*Note:\*\* PostgreSQL and Redis must be started separately according to their configured local setup. The current root Docker Compose file defines Kafka only.
+> \*\*Infrastructure note:\*\* The current root `docker-compose.yml` defines Kafka only. PostgreSQL and Redis must be started separately according to their local configuration.
 
 
 
-\## 10. Kafka Event Structure
+\## 11. Kafka Event Structure
 
 
 
@@ -654,7 +756,7 @@ The producer generates JSON events containing the following fields:
 
 
 
-Example:
+\### Example Event
 
 
 
@@ -682,7 +784,11 @@ The producer uses the zone as the Kafka message key and publishes events to the 
 
 
 
-\## 11. API Endpoints
+\## 12. API Endpoints
+
+
+
+The Spring Boot backend provides the following REST endpoints:
 
 
 
@@ -690,7 +796,7 @@ The producer uses the zone as the Kafka message key and publishes events to the 
 
 |---|---|---|
 
-| GET | `/api/zones` | Retrieve campus zone occupancy |
+| GET | `/api/zones` | Retrieve campus zone occupancy information |
 
 | GET | `/api/events` | Retrieve campus activity events |
 
@@ -702,7 +808,7 @@ The backend also contains WebSocket configuration for live update communication.
 
 
 
-\## 12. Deployment
+\## 13. Deployment
 
 
 
@@ -710,7 +816,7 @@ The planned cloud deployment uses a Linux virtual machine to host the backend in
 
 
 
-The intended cloud architecture includes:
+The intended deployment architecture includes:
 
 
 
@@ -728,17 +834,17 @@ The intended cloud architecture includes:
 
 
 
-Deployment-specific environment variables and secrets should be configured securely on the cloud server rather than committed to the repository.
+Deployment-specific environment variables and secrets will be configured securely on the cloud server rather than committed to the repository.
 
 
 
-\## 13. Future Scope
+\## 14. Future Scope
 
 
 
 \- Improved location validation and geofencing.
 
-\- Enhanced occupancy reporting.
+\- Enhanced campus occupancy reporting.
 
 \- Configurable alert thresholds.
 
@@ -750,7 +856,7 @@ Deployment-specific environment variables and secrets should be configured secur
 
 
 
-\## 14. Team Members
+\## 15. Team Members
 
 
 
@@ -772,11 +878,25 @@ Deployment-specific environment variables and secrets should be configured secur
 
 
 
-\*\*Project:\*\* Campus Pulse  
+<p align="center">
 
-\*\*Repository:\*\* https://github.com/bhumika242005-stack/Campus-Pulse  
+&#x20; <b>Campus Pulse</b><br/>
 
-\*\*Integration Branch:\*\* `integration/final-system`
+&#x20; Real-Time Campus Monitoring System
+
+</p>
+
+
+
+<p align="center">
+
+&#x20; <a href="https://github.com/bhumika242005-stack/Campus-Pulse">GitHub Repository</a>
+
+&#x20; \&nbsp; | \&nbsp;
+
+&#x20; <code>integration/final-system</code>
+
+</p>
 
 
 
