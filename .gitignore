@@ -3,3 +3,10 @@ __pycache__/
 *.pyc
 .env
 .vscode/
+# Expo / EAS temporary files
+mobile/.eas-inspect-archive/
+mobile/.expo/
+mobile/node_modules/
+
+# Old database test file containing hardcoded credentials
+postgres_code.txt
