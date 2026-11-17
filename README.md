@@ -678,7 +678,7 @@ The producer generates JSON events containing the following fields:
 }
 ```
 
-### 12. API Endpoints
+## 12. API Endpoints
 
 
 
