@@ -762,3 +762,36 @@ Deployment-specific environment variables and secrets will be configured securel
 ---
 
 **Repository:** [Campus Pulse on GitHub](https://github.com/bhumika242005-stack/Campus-Pulse)
+
+\---
+## Project Status
+
+The integrated Campus Pulse application includes mobile check-in/check-out, backend APIs, Kafka-based event processing, database integration and monitoring dashboards.
+
+The project is maintained as a collaborative academic capstone project.
+
+\---
+
+
+<p align="center">
+
+&#x20; <b>Campus Pulse</b><br/>
+
+&#x20; Real-Time Campus Monitoring System
+
+</p>
+
+
+
+<p align="center">
+
+&#x20; <a href="https://github.com/bhumika242005-stack/Campus-Pulse">GitHub Repository</a>
+
+&#x20; &nbsp; | &nbsp;
+
+&#x20; <code>integration/final-system</code>
+
+</p>
+
+
+
