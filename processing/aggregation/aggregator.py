@@ -46,7 +46,9 @@ KAFKA_CONFIG = {
     "bootstrap_servers": KAFKA_SERVER,
     "auto_offset_reset": "earliest",
     "enable_auto_commit": False,
+    "api_version": (2, 8, 0),
     "group_id": KAFKA_GROUP_ID
+    
 }
 
 if KAFKA_SECURITY_PROTOCOL != "PLAINTEXT":
