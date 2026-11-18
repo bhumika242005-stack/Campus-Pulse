@@ -1,7 +1,9 @@
+
 package com.campuspulse.backend.service;
 
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -11,11 +13,11 @@ import java.util.Map;
 @Service
 public class PostgresService {
 
-    private static final String URL =
-            "jdbc:postgresql://localhost:5432/campus_pulse";
+    private final DataSource dataSource;
 
-    private static final String USER = "campus";
-    private static final String PASSWORD = "campus123";
+    public PostgresService(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public List<Map<String, Object>> getEvents() {
 
@@ -29,14 +31,9 @@ public class PostgresService {
                 """;
 
         try (
-                Connection connection =
-                        DriverManager.getConnection(URL, USER, PASSWORD);
-
-                PreparedStatement statement =
-                        connection.prepareStatement(sql);
-
-                ResultSet resultSet =
-                        statement.executeQuery()
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()
         ) {
 
             while (resultSet.next()) {
@@ -54,7 +51,9 @@ public class PostgresService {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to fetch events from PostgreSQL", e);
+            throw new RuntimeException(
+                    "Failed to fetch events from PostgreSQL", e
+            );
         }
 
         return events;

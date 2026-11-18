@@ -9,7 +9,7 @@ import AlertsPanel from "./components/AlertsPanel";
 import LiveEvents from "./components/LiveEvents";
 
 import { connectWebSocket } from "./services/websocket";
-import { getEvents } from "./services/api";
+import { getZones, getEvents } from "./services/api";
 
 function App() {
   const [activePage, setActivePage] = useState("Dashboard");
@@ -29,14 +29,22 @@ function App() {
   // =========================
 
   useEffect(() => {
-    const socket = connectWebSocket((data) => {
+  // Load current zone data immediately from backend
+  getZones()
+    .then((data) => {
       setZones(data);
+    })
+    .catch((error) => {
+      console.error("Failed to load zones:", error);
     });
 
-    return () => {
-      socket.close();
-    };
-  }, []);
+  // Continue receiving live WebSocket updates
+  const socket = connectWebSocket((data) => {
+    setZones(data);
+  });
+
+  return () => socket.close();
+}, []);
 
   // =========================
   // POSTGRESQL EVENTS

@@ -1,3 +1,4 @@
+
 package com.campuspulse.backend.service;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -13,6 +14,12 @@ public class RedisService {
     }
 
     public String getValue(String key) {
-        return redisTemplate.opsForValue().get(key);
+        try {
+            return redisTemplate.opsForValue().get(key);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                "Unable to read Redis key: " + key, e
+            );
+        }
     }
 }

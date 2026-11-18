@@ -1,6 +1,8 @@
+
 package com.campuspulse.backend.config;
 
 import com.campuspulse.backend.websocket.CampusWebSocketHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -12,13 +14,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final CampusWebSocketHandler webSocketHandler;
 
+    @Value("${app.frontend-origin:http://localhost:5173}")
+    private String frontendOrigin;
+
     public WebSocketConfig(CampusWebSocketHandler webSocketHandler) {
         this.webSocketHandler = webSocketHandler;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+
         registry.addHandler(webSocketHandler, "/ws")
-                .setAllowedOrigins("*");
+                .setAllowedOrigins(frontendOrigin);
     }
 }
