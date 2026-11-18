@@ -1,3 +1,4 @@
+import os
 import json
 from datetime import datetime
 
@@ -10,8 +11,13 @@ from processing.alerts.alert_engine import check_zone_activity
 
 
 # Kafka configuration
-KAFKA_SERVER = "localhost:9092"
-TOPIC_NAME = "campus-events"
+# Kafka configuration
+KAFKA_SERVER = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+TOPIC_NAME = os.getenv("KAFKA_TOPIC", "campus-events")
+KAFKA_GROUP_ID = os.getenv(
+    "KAFKA_GROUP_ID",
+    "campus-pulse-aggregator-v4"
+)
 
 # Valid zones
 ZONES = ["Library", "Canteen", "Lab"]
@@ -31,7 +37,7 @@ consumer = KafkaConsumer(
     bootstrap_servers=KAFKA_SERVER,
     auto_offset_reset="earliest",
     enable_auto_commit=False,
-    group_id="campus-pulse-aggregator-v4"
+    group_id=KAFKA_GROUP_ID
 )
 
 

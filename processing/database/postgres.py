@@ -1,11 +1,13 @@
+
+import os
 import psycopg2
 
 DB_CONFIG = {
-    "host": "localhost",
-    "port": 5432,
-    "database": "campus_pulse",
-    "user": "campus",
-    "password": "campus123"
+    "host": os.getenv("DB_HOST", "localhost"),
+    "port": int(os.getenv("DB_PORT", "5432")),
+    "database": os.getenv("DB_NAME", "campus_pulse"),
+    "user": os.getenv("DB_USER", "campus"),
+    "password": os.getenv("DB_PASSWORD", "campus123")
 }
 
 
