@@ -1,72 +1,94 @@
+
 import json
 import time
 import os
-import socket
 
-from kafka import KafkaProducer
-
+from confluent_kafka import Producer
 from simulator import generate_event
 
 
+KAFKA_SERVER = os.getenv(
+    "KAFKA_BOOTSTRAP_SERVERS",
+    os.getenv(
+        "KAFKA_SERVER",
+        "campus-pulse-kafka-campus-pulse-team.f.aivencloud.com:23481"
+    )
+)
 
-KAFKA_SERVER = os.getenv("KAFKA_SERVER", "localhost:9092")
 TOPIC_NAME = os.getenv("KAFKA_TOPIC", "campus-events")
+KAFKA_USERNAME = os.getenv("KAFKA_USERNAME", "avnadmin")
+KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")
 
+CA_CERT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ca.pem")
 
 generated_event_ids = set()
 
+
+def delivery_report(err, msg, event_id):
+    if err is not None:
+        print(f"Failed | event={event_id} | error={err}")
+    else:
+        generated_event_ids.add(event_id)
+        print(
+            f"Sent | event={event_id} | "
+            f"topic={msg.topic()} | "
+            f"zone={msg.key().decode('utf-8')} | "
+            f"partition={msg.partition()} | "
+            f"offset={msg.offset()}"
+        )
+
+
 def send_event(producer, event):
-    if event["event_id"] in generated_event_ids:
-        print(f"Duplicate event ignored: {event['event_id']}")
+    event_id = event["event_id"]
+
+    if event_id in generated_event_ids:
+        print(f"Duplicate event ignored: {event_id}")
         return
 
-    generated_event_ids.add(event["event_id"])
     try:
-        future = producer.send(
+        producer.produce(
             TOPIC_NAME,
-            value=event,
-            key=event["zone"].encode("utf-8")
+            key=event["zone"].encode("utf-8"),
+            value=json.dumps(event).encode("utf-8"),
+            callback=lambda err, msg: delivery_report(
+                err, msg, event_id
+            )
         )
 
-        metadata = future.get(timeout=10)
+        producer.poll(0)
+        remaining = producer.flush(10)
 
-        print(
-            f"Sent | "
-            f"event={event['event_id']} | "
-            f"zone={event['zone']} | "
-            f"partition={metadata.partition} | "
-            f"offset={metadata.offset}"
-        )
+        if remaining:
+            print(f"Delivery timed out for event: {event_id}")
 
     except Exception as e:
-        print(
-            f"Failed | "
-            f"event={event['event_id']} | "
-            f"error={e}"
-        )
-def kafka_available():
-    host, port = KAFKA_SERVER.split(":")
-    
-    try:
-        with socket.create_connection((host, int(port)), timeout=3):
-            return True
-    except OSError:
-        return False
+        print(f"Failed | event={event_id} | error={e}")
+
 
 def main():
     producer = None
 
     try:
-        if not kafka_available():
-            print(f"Kafka is not available at {KAFKA_SERVER}")
-            return
-        producer = KafkaProducer(
-            bootstrap_servers=KAFKA_SERVER,
-            value_serializer=lambda value: json.dumps(value).encode("utf-8"),
-            request_timeout_ms=5000
-        )
+        if not KAFKA_PASSWORD:
+            raise ValueError("KAFKA_PASSWORD environment variable is missing")
+
+        if not os.path.isfile(CA_CERT):
+            raise FileNotFoundError(f"CA certificate not found: {CA_CERT}")
+
+        config = {
+            "bootstrap.servers": KAFKA_SERVER,
+            "security.protocol": "SASL_SSL",
+            "sasl.mechanisms": "SCRAM-SHA-256",
+            "sasl.username": KAFKA_USERNAME,
+            "sasl.password": KAFKA_PASSWORD,
+            "ssl.ca.location": CA_CERT,
+        }
+
+        producer = Producer(config)
 
         print("Campus Pulse Producer Started")
+        print(f"Connected to Aiven Kafka: {KAFKA_SERVER}")
+        print(f"Publishing to topic: {TOPIC_NAME}")
 
         while True:
             event = generate_event()
@@ -81,8 +103,9 @@ def main():
 
     finally:
         if producer is not None:
-            producer.flush()
-            producer.close()
+            remaining = producer.flush(10)
+            if remaining:
+                print(f"Warning: {remaining} messages were not delivered.")
 
 
 if __name__ == "__main__":
