@@ -2,9 +2,10 @@
 import json
 import time
 import os
-
+from dotenv import load_dotenv
 from confluent_kafka import Producer
 from simulator import generate_event
+load_dotenv()
 
 
 KAFKA_SERVER = os.getenv(
