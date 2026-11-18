@@ -1,27 +1,19 @@
+
 import os
 import psycopg2
-from datetime import datetime, timezone
 
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
     "port": int(os.getenv("DB_PORT", "5432")),
     "database": os.getenv("DB_NAME", "campus_pulse"),
     "user": os.getenv("DB_USER", "campus"),
-    "password": os.environ["DB_PASSWORD"]
+    "password": os.getenv("DB_PASSWORD", "campus123")
 }
 
 
 def get_connection():
     return psycopg2.connect(**DB_CONFIG)
-def parse_event_timestamp(timestamp):
-    parsed = datetime.fromisoformat(
-        timestamp.replace("Z", "+00:00")
-    )
 
-    if parsed.tzinfo is None:
-        raise ValueError("Event timestamp must include a timezone")
-
-    return parsed.astimezone(timezone.utc)
 
 def test_connection():
     try:
@@ -47,7 +39,7 @@ def create_table():
                 student_id VARCHAR(20) NOT NULL,
                 zone VARCHAR(50) NOT NULL,
                 event_type VARCHAR(50) NOT NULL,
-                timestamp TIMESTAMPTZ NOT NULL
+                timestamp TIMESTAMP NOT NULL
             )
         """)
 
@@ -55,7 +47,7 @@ def create_table():
             CREATE TABLE IF NOT EXISTS student_presence (
                 student_id VARCHAR(20) PRIMARY KEY,
                 zone VARCHAR(50) NOT NULL,
-                check_in_time TIMESTAMPTZ NOT NULL
+                check_in_time TIMESTAMP NOT NULL
             )
         """)
 
@@ -73,7 +65,6 @@ def create_table():
 
 
 def process_event(event):
-    event_timestamp = parse_event_timestamp(event["timestamp"])
     connection = get_connection()
 
     try:
@@ -90,7 +81,7 @@ def process_event(event):
             event["student_id"],
             event["zone"],
             event["event_type"],
-            event_timestamp
+            event["timestamp"]
         ))
 
         inserted = cursor.fetchone()
@@ -108,7 +99,7 @@ def process_event(event):
                 """, (
                     event["student_id"],
                     event["zone"],
-                    event_timestamp
+                    event["timestamp"]
                 ))
 
             elif event["event_type"] == "check_out":

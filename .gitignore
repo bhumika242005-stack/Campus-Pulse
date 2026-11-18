@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .env
 .vscode/
+ca.pem
+
 # Expo / EAS temporary files
 mobile/.eas-inspect-archive/
 mobile/.expo/
