@@ -58,11 +58,14 @@ def validate_event(event):
         return False, f"Invalid event_type: {event['event_type']}"
 
     # 7. Validate timestamp
+    if not isinstance(event["timestamp"], str):
+        return False, "Invalid timestamp"
+
     try:
         datetime.fromisoformat(
             event["timestamp"].replace("Z", "+00:00")
         )
-    except (ValueError, TypeError):
+    except ValueError:
         return False, "Invalid timestamp"
 
     return True, "Valid event"
