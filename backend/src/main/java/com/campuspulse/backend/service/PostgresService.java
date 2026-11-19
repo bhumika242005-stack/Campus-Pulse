@@ -12,16 +12,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PostgresService {
 
-    private static final String URL =
-            "jdbc:postgresql://localhost:5432/campus_pulse";
+    @Value("${spring.datasource.url}")
+    private String url;
 
-    private static final String USER = "campus";
-    private static final String PASSWORD = "campus123";
+    @Value("${spring.datasource.username}")
+    private String user;
+
+    @Value("${spring.datasource.password}")
+    private String password;
 
     public List<Map<String, Object>> getEvents() {
 
@@ -36,7 +40,7 @@ public class PostgresService {
 
         try (
                 Connection connection =
-                        DriverManager.getConnection(URL, USER, PASSWORD);
+                        DriverManager.getConnection(url, user, password);
 
                 PreparedStatement statement =
                         connection.prepareStatement(sql);
@@ -44,9 +48,7 @@ public class PostgresService {
                 ResultSet resultSet =
                         statement.executeQuery()
         ) {
-
             while (resultSet.next()) {
-
                 Map<String, Object> event = new LinkedHashMap<>();
 
                 event.put("id", resultSet.getInt("id"));
@@ -58,7 +60,8 @@ public class PostgresService {
                 OffsetDateTime timestamp =
                         resultSet.getObject("timestamp", OffsetDateTime.class);
 
-                event.put("timestamp", timestamp.toInstant().toString());
+                event.put("timestamp",
+                        timestamp == null ? null : timestamp.toInstant().toString());
 
                 events.add(event);
             }
