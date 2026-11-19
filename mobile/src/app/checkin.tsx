@@ -1,4 +1,4 @@
-
+import { API_BASE_URL } from '../constants/api';
 import React, { useState } from 'react';
 import {
   View,
@@ -25,7 +25,6 @@ type CampusEvent = {
 
 // Replace with your actual assigned student ID when confirmed
 const STUDENT_ID = 'S0003'; // Replace with your assigned student ID
-const API_URL = 'http://172.18.149.34:8080';
 
 const zones = ['Library', 'Canteen', 'Computer Lab'];
 
@@ -136,7 +135,7 @@ const handleCheckIn = async () => {
 
     const event = generateEvent('check_in', selectedZone);
 
-    const response = await fetch(`${API_URL}/api/events`, {
+    const response = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -181,7 +180,7 @@ const handleCheckOut = async () => {
 
     const event = generateEvent('check_out', activeZone);
 
-    const response = await fetch(`${API_URL}/api/events`, {
+    const response = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -647,3 +646,4 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
 });
+
