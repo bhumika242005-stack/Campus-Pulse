@@ -1,3 +1,4 @@
+
 import { API_BASE_URL } from '../constants/api';
 import React, { useEffect, useState } from 'react';
 import {
@@ -12,6 +13,12 @@ type ZoneInfo = {
   zone: string;
   occupancy: number;
 };
+
+type ZoneValue =
+  | number
+  | string
+  | { occupancy?: number | string | null }
+  | null;
 
 type CampusEvent = {
   event_id?: string;
@@ -32,6 +39,52 @@ const initialZones: ZoneInfo[] = [
   { zone: 'Lab', occupancy: 0 },
 ];
 
+const EXPECTED_ZONES = ['Library', 'Canteen', 'Lab'];
+
+function parseOccupancy(value: ZoneValue): number {
+  let parsedValue: unknown = value;
+
+  // Support JSON strings if the backend returns them.
+  if (typeof value === 'string') {
+    try {
+      parsedValue = JSON.parse(value);
+    } catch {
+      parsedValue = value;
+    }
+  }
+
+  // Backend may return a direct number.
+  if (typeof parsedValue === 'number') {
+    return Number.isFinite(parsedValue)
+      ? Math.max(0, parsedValue)
+      : 0;
+  }
+
+  // Support numeric strings.
+  if (typeof parsedValue === 'string') {
+    const numberValue = Number(parsedValue);
+
+    return Number.isFinite(numberValue)
+      ? Math.max(0, numberValue)
+      : 0;
+  }
+
+  // Also support object responses.
+  if (
+    parsedValue !== null &&
+    typeof parsedValue === 'object' &&
+    'occupancy' in parsedValue
+  ) {
+    const numberValue = Number(parsedValue.occupancy);
+
+    return Number.isFinite(numberValue)
+      ? Math.max(0, numberValue)
+      : 0;
+  }
+
+  return 0;
+}
+
 export default function AnalyticsScreen() {
   const [zones, setZones] = useState<ZoneInfo[]>(initialZones);
   const [events, setEvents] = useState<CampusEvent[]>([]);
@@ -40,7 +93,7 @@ export default function AnalyticsScreen() {
   const [eventsConnected, setEventsConnected] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch live occupancy and recent events
+  // Fetch live occupancy and recent events.
   useEffect(() => {
     let active = true;
 
@@ -51,34 +104,31 @@ export default function AnalyticsScreen() {
           fetch(`${API_BASE_URL}/api/events`),
         ]);
 
-        // Process zone occupancy
+        // Process live zone occupancy.
         const zoneResult = results[0];
 
         if (
           zoneResult.status === 'fulfilled' &&
           zoneResult.value.ok
         ) {
-          const zoneData = await zoneResult.value.json();
+          const zoneData: unknown = await zoneResult.value.json();
 
-          const parsedZones: ZoneInfo[] = Object.entries(
-            zoneData as Record<
-              string,
-              string | { occupancy?: number }
-            >
-          ).map(([name, value]) => {
-            const data =
-              typeof value === 'string'
-                ? JSON.parse(value)
-                : value;
+          if (
+            zoneData === null ||
+            typeof zoneData !== 'object' ||
+            Array.isArray(zoneData)
+          ) {
+            throw new Error('Invalid zones response');
+          }
 
-            return {
-              zone: name,
-              occupancy: Math.max(
-                0,
-                Number(data.occupancy) || 0
-              ),
-            };
-          });
+          const responseZones = zoneData as Record<string, ZoneValue>;
+
+          const parsedZones: ZoneInfo[] = EXPECTED_ZONES.map(
+            zoneName => ({
+              zone: zoneName,
+              occupancy: parseOccupancy(responseZones[zoneName]),
+            })
+          );
 
           if (active) {
             setZones(parsedZones);
@@ -90,21 +140,27 @@ export default function AnalyticsScreen() {
           }
         }
 
-        // Process recent PostgreSQL events
+        // Process recent PostgreSQL events.
         const eventResult = results[1];
 
         if (
           eventResult.status === 'fulfilled' &&
           eventResult.value.ok
         ) {
-          const eventData = await eventResult.value.json();
+          const eventData: unknown = await eventResult.value.json();
 
-          const parsedEvents: CampusEvent[] =
-            Array.isArray(eventData)
-              ? eventData
-              : Array.isArray(eventData.events)
-                ? eventData.events
-                : [];
+          let parsedEvents: CampusEvent[] = [];
+
+          if (Array.isArray(eventData)) {
+            parsedEvents = eventData as CampusEvent[];
+          } else if (
+            eventData !== null &&
+            typeof eventData === 'object' &&
+            'events' in eventData &&
+            Array.isArray(eventData.events)
+          ) {
+            parsedEvents = eventData.events as CampusEvent[];
+          }
 
           if (active) {
             setEvents(parsedEvents);
@@ -132,6 +188,8 @@ export default function AnalyticsScreen() {
           setLoading(false);
         }
       } catch (err) {
+        console.error('Analytics fetch error:', err);
+
         if (active) {
           setError('Unable to load analytics data.');
           setLoading(false);
@@ -149,13 +207,13 @@ export default function AnalyticsScreen() {
     };
   }, []);
 
-  // Calculate current occupancy
+  // Calculate total current occupancy.
   const totalOccupancy = zones.reduce(
     (total, zone) => total + zone.occupancy,
     0
   );
 
-  // Count check-ins and check-outs
+  // Count check-ins and check-outs.
   const totalCheckIns = events.filter(
     event => event.event_type?.toLowerCase() === 'check_in'
   ).length;
@@ -164,7 +222,7 @@ export default function AnalyticsScreen() {
     event => event.event_type?.toLowerCase() === 'check_out'
   ).length;
 
-  // Build activity chart from actual event timestamps
+  // Build activity chart from actual event timestamps.
   const hourCounts: Record<string, number> = {};
 
   events.forEach(event => {
@@ -218,6 +276,7 @@ export default function AnalyticsScreen() {
     ...hours.map(item => item.value)
   );
 
+  // Keep backend zone names and mobile display names separate.
   const getZoneName = (zone: string) =>
     zone === 'Lab' ? 'Computer Lab' : zone;
 
