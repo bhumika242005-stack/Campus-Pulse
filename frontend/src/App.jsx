@@ -42,7 +42,14 @@ function Dashboard() {
         getAlerts(),
       ]);
 
-      setZones(zoneData || {});
+      console.log("ZONES API RESPONSE:", zoneData);
+      console.log("LIBRARY OCCUPANCY:", zoneData?.Library?.occupancy);
+
+      if (!zoneData || typeof zoneData !== "object") {
+        throw new Error("Invalid zones API response");
+      }
+
+      setZones(zoneData);
       setEvents(Array.isArray(eventData) ? eventData : []);
       setAlerts(alertData);
       setError("");
@@ -60,9 +67,14 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const library = Number(zones.Library?.occupancy ?? 0);
-  const canteen = Number(zones.Canteen?.occupancy ?? 0);
-  const lab = Number(zones.Lab?.occupancy ?? 0);
+  const getOccupancy = (zone) => {
+    const number = Number(zone?.occupancy ?? 0);
+    return Number.isFinite(number) && number >= 0 ? number : 0;
+  };
+
+  const library = getOccupancy(zones.Library);
+  const canteen = getOccupancy(zones.Canteen);
+  const lab = getOccupancy(zones.Lab);
 
   const capacities = {
     Library: 300,
@@ -71,7 +83,9 @@ function Dashboard() {
   };
 
   const uniqueStudents = new Set(
-    events.map((event) => event.student_id)
+    events
+      .map((event) => event.student_id)
+      .filter(Boolean)
   ).size;
 
   const occupancyData = [
@@ -88,7 +102,6 @@ function Dashboard() {
 
   return (
     <div className="page">
-
       <div className="dashboard-header">
         <div>
           <h1>Welcome back, Admin</h1>
@@ -108,7 +121,6 @@ function Dashboard() {
       )}
 
       <div className="stats-grid">
-
         <StatCard
           icon={<Users size={21} />}
           title="Students Tracked"
@@ -120,14 +132,18 @@ function Dashboard() {
           icon={<BookOpen size={21} />}
           title="Library Occupancy"
           value={`${library}/${capacities.Library}`}
-          subtitle={`${Math.round(library / capacities.Library * 100)}% capacity`}
+          subtitle={`${Math.round(
+            (library / capacities.Library) * 100
+          )}% capacity`}
         />
 
         <StatCard
           icon={<Utensils size={21} />}
           title="Canteen Occupancy"
           value={`${canteen}/${capacities.Canteen}`}
-          subtitle={`${Math.round(canteen / capacities.Canteen * 100)}% capacity`}
+          subtitle={`${Math.round(
+            (canteen / capacities.Canteen) * 100
+          )}% capacity`}
         />
 
         <StatCard
@@ -136,13 +152,10 @@ function Dashboard() {
           value={alertList.length}
           subtitle="Alerts returned by backend"
         />
-
       </div>
 
       <div className="dashboard-grid">
-
         <section className="dashboard-card">
-
           <div className="card-header">
             <div>
               <h2>Campus Occupancy</h2>
@@ -151,7 +164,6 @@ function Dashboard() {
           </div>
 
           <div className="occupancy-list">
-
             {occupancyData.map((item) => (
               <OccupancyCard
                 key={item.location}
@@ -160,12 +172,10 @@ function Dashboard() {
                 capacity={capacities[item.location]}
               />
             ))}
-
           </div>
         </section>
 
         <section className="dashboard-card">
-
           <div className="card-header">
             <div>
               <h2>Active Alerts</h2>
@@ -174,7 +184,6 @@ function Dashboard() {
           </div>
 
           <div className="alert-list">
-
             {alertList.length === 0 ? (
               <p>No active alerts.</p>
             ) : (
@@ -194,14 +203,11 @@ function Dashboard() {
                 </div>
               ))
             )}
-
           </div>
         </section>
-
       </div>
 
       <section className="dashboard-card">
-
         <div className="card-header">
           <div>
             <h2>Recent Events</h2>
@@ -210,10 +216,11 @@ function Dashboard() {
         </div>
 
         <div className="event-list">
-
-          {events.slice(0, 10).map((event) => (
-            <div className="event-item" key={event.event_id}>
-
+          {events.slice(0, 10).map((event, index) => (
+            <div
+              className="event-item"
+              key={event.event_id ?? event.id ?? index}
+            >
               <div className="event-indicator"></div>
 
               <div className="event-info">
@@ -231,13 +238,10 @@ function Dashboard() {
               <time>
                 {new Date(event.timestamp).toLocaleString()}
               </time>
-
             </div>
           ))}
-
         </div>
       </section>
-
     </div>
   );
 }
