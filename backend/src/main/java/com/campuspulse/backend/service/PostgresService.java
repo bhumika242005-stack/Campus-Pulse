@@ -33,7 +33,7 @@ public class PostgresService {
 
         String sql = """
                 SELECT id, event_id, student_id, zone, event_type, timestamp
-                FROM events
+                FROM public.events
                 ORDER BY timestamp DESC
                 LIMIT 100
                 """;
