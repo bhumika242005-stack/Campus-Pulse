@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
 import json
 from datetime import datetime
 
@@ -10,8 +14,20 @@ from processing.alerts.alert_engine import check_zone_activity
 
 
 # Kafka configuration
-KAFKA_SERVER = "localhost:9092"
-TOPIC_NAME = "campus-events"
+KAFKA_SERVER = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+TOPIC_NAME = os.getenv("KAFKA_TOPIC", "campus-events")
+KAFKA_GROUP_ID = os.getenv(
+    "KAFKA_GROUP_ID",
+    "campus-pulse-aggregator-v4"
+)
+
+KAFKA_SECURITY_PROTOCOL = os.getenv(
+    "KAFKA_SECURITY_PROTOCOL", "PLAINTEXT"
+)
+KAFKA_SASL_MECHANISM = os.getenv("KAFKA_SASL_MECHANISM")
+KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
+KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")
+KAFKA_SSL_CAFILE = os.getenv("KAFKA_SSL_CAFILE") or None
 
 # Valid zones
 ZONES = ["Library", "Canteen", "Lab"]
@@ -26,13 +42,25 @@ if not test_connection():
 
 
 # Kafka consumer
-consumer = KafkaConsumer(
-    TOPIC_NAME,
-    bootstrap_servers=KAFKA_SERVER,
-    auto_offset_reset="earliest",
-    enable_auto_commit=False,
-    group_id="campus-pulse-aggregator-v4"
-)
+KAFKA_CONFIG = {
+    "bootstrap_servers": KAFKA_SERVER,
+    "auto_offset_reset": "earliest",
+    "enable_auto_commit": False,
+    "api_version": (2, 8, 0),
+    "group_id": KAFKA_GROUP_ID
+    
+}
+
+if KAFKA_SECURITY_PROTOCOL != "PLAINTEXT":
+    KAFKA_CONFIG.update({
+        "security_protocol": KAFKA_SECURITY_PROTOCOL,
+        "sasl_mechanism": KAFKA_SASL_MECHANISM,
+        "sasl_plain_username": KAFKA_USERNAME,
+        "sasl_plain_password": KAFKA_PASSWORD,
+        "ssl_cafile": KAFKA_SSL_CAFILE
+    })
+
+consumer = KafkaConsumer(TOPIC_NAME, **KAFKA_CONFIG)
 
 
 print("\nCampus Pulse Aggregator Started")

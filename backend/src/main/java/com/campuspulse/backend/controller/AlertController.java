@@ -1,12 +1,14 @@
 
 package com.campuspulse.backend.controller;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.campuspulse.backend.service.RedisService;
 
 @RestController
+@CrossOrigin(origins = "https://campus-pulse-frontend-seven.vercel.app")
 public class AlertController {
 
     private final RedisService redisService;
