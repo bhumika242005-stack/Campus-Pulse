@@ -107,25 +107,50 @@ export default function DashboardScreen() {
         const eventsResult: EventsResponse | EventInfo[] =
           await eventsResponse.json();
 
-        // Process zone occupancy
+        
+        // Process zone occupancy from the backend response
+        const zonesData = zonesResult as Record<string, unknown>;
+
         const parsedZones: ZoneInfo[] = Object.entries(
-          zonesResult as Record<string, string | ZoneResponse>
+          zonesData
         ).map(([name, value]) => {
-          const zoneData: ZoneResponse =
-            typeof value === 'string'
-              ? JSON.parse(value)
-              : value;
+          let occupancy = 0;
+          let alert: string | null = null;
+          let updated_at = '';
+
+          if (typeof value === 'number') {
+            // Backend format: { "Library": 2 }
+            occupancy = value;
+          } else if (typeof value === 'string') {
+            try {
+              const parsed = JSON.parse(value);
+
+              if (typeof parsed === 'number') {
+                occupancy = parsed;
+              } else if (parsed && typeof parsed === 'object') {
+                const data = parsed as ZoneResponse;
+                occupancy = Number(data.occupancy) || 0;
+                alert = data.alert ?? null;
+                updated_at = data.updated_at ?? '';
+              }
+            } catch {
+              occupancy = Number(value) || 0;
+            }
+          } else if (value && typeof value === 'object') {
+            const data = value as ZoneResponse;
+            occupancy = Number(data.occupancy) || 0;
+            alert = data.alert ?? null;
+            updated_at = data.updated_at ?? '';
+          }
 
           return {
-            zone: zoneData.zone ?? name,
-            occupancy: Math.max(
-              0,
-              Number(zoneData.occupancy) || 0
-            ),
-            alert: zoneData.alert ?? null,
-            updated_at: zoneData.updated_at ?? '',
+            zone: name,
+            occupancy: Math.max(0, occupancy),
+            alert,
+            updated_at,
           };
         });
+
 
         // Extract events from the API response
         const events: EventInfo[] = Array.isArray(eventsResult)
@@ -153,8 +178,8 @@ export default function DashboardScreen() {
         const todaysEvents = events.filter((event) => {
           if (!event.timestamp) return false;
 
-          // Correct the 5 hour 30 minute shift introduced by the backend
           const eventDate = new Date(event.timestamp);
+
           if (Number.isNaN(eventDate.getTime())) {
             return false;
           }
@@ -253,12 +278,10 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* Header */}
         <View style={styles.header}>
           <View>
             <Text style={styles.logo}>CAMPUS PULSE</Text>
-
             <Text style={styles.subtitle}>
               SMART CAMPUS OCCUPANCY
             </Text>
@@ -326,11 +349,9 @@ export default function DashboardScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📍</Text>
-
             <Text style={styles.statNumber}>
               {loading ? '...' : zones.length}
             </Text>
-
             <Text style={styles.statLabel}>
               Monitored Zones
             </Text>
@@ -338,11 +359,9 @@ export default function DashboardScreen() {
 
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>⚠️</Text>
-
             <Text style={styles.statNumber}>
               {loading ? '...' : activeAlerts}
             </Text>
-
             <Text style={styles.statLabel}>
               Active Alerts
             </Text>
@@ -352,11 +371,9 @@ export default function DashboardScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📥</Text>
-
             <Text style={styles.statNumber}>
               {loading ? '...' : checkinsToday}
             </Text>
-
             <Text style={styles.statLabel}>
               Check-ins Today
             </Text>
@@ -364,11 +381,9 @@ export default function DashboardScreen() {
 
           <View style={styles.statCard}>
             <Text style={styles.statIcon}>📤</Text>
-
             <Text style={styles.statNumber}>
               {loading ? '...' : checkoutsToday}
             </Text>
-
             <Text style={styles.statLabel}>
               Check-outs Today
             </Text>
@@ -534,7 +549,6 @@ export default function DashboardScreen() {
           Occupancy data is refreshed automatically from the
           Campus Pulse backend.
         </Text>
-
       </ScrollView>
     </SafeAreaView>
   );
