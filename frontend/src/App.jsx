@@ -43,7 +43,7 @@ function Dashboard() {
       ]);
 
       console.log("ZONES API RESPONSE:", zoneData);
-      console.log("LIBRARY OCCUPANCY:", zoneData?.Library?.occupancy);
+      console.log("LIBRARY API VALUE:", zoneData?.Library);
 
       if (!zoneData || typeof zoneData !== "object") {
         throw new Error("Invalid zones API response");
@@ -67,9 +67,18 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Supports both direct numeric and nested API response formats.
   const getOccupancy = (zone) => {
-    const number = Number(zone?.occupancy ?? 0);
-    return Number.isFinite(number) && number >= 0 ? number : 0;
+    const value =
+      zone && typeof zone === "object"
+        ? zone.occupancy
+        : zone;
+
+    const number = Number(value ?? 0);
+
+    return Number.isFinite(number) && number >= 0
+      ? number
+      : 0;
   };
 
   const library = getOccupancy(zones.Library);
