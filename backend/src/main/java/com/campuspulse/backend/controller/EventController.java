@@ -19,7 +19,8 @@ import com.campuspulse.backend.service.PostgresService;
 @RestController
 @CrossOrigin(origins = {
     "http://localhost:5173",
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "https://campus-pulse-frontend-seven.vercel.app"
 })
 public class EventController {
 
