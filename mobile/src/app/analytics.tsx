@@ -1,4 +1,4 @@
-
+import { API_BASE_URL } from '../constants/api';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -7,8 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const API_URL = 'http://172.18.149.34:8080';
 
 type ZoneInfo = {
   zone: string;
@@ -49,8 +47,8 @@ export default function AnalyticsScreen() {
     const fetchAnalytics = async () => {
       try {
         const results = await Promise.allSettled([
-          fetch(`${API_URL}/api/zones`),
-          fetch(`${API_URL}/api/events`),
+          fetch(`${API_BASE_URL}/api/zones`),
+          fetch(`${API_BASE_URL}/api/events`),
         ]);
 
         // Process zone occupancy

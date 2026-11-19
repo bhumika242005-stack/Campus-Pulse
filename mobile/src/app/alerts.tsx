@@ -1,4 +1,4 @@
-
+import { API_BASE_URL } from '../constants/api';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -8,8 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const API_URL = 'http://172.18.149.34:8080';
 
 type CampusAlert = {
   alert_type?: string;
@@ -32,7 +30,7 @@ export default function AlertsScreen() {
 
     const fetchAlerts = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/alerts`);
+        const response = await fetch(`${API_BASE_URL}/api/alerts`);
 
         if (!response.ok) {
           throw new Error('Unable to fetch alerts.');
